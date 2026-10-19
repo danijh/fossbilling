@@ -27,7 +27,7 @@ class generalCheck implements \FOSSBilling\Interfaces\SecurityCheckInterface
 
     public function getDescription(): string
     {
-        return __trans('Checks general information such as the FOSSBilling configuration.');
+        return __trans('Checks general information such as the billing platform configuration.');
     }
 
     public function performCheck(): SecurityCheckResult
@@ -65,7 +65,7 @@ class generalCheck implements \FOSSBilling\Interfaces\SecurityCheckInterface
             $status = $status <= $this->warn ? $this->warn : $status;
         }
         if ($config['debug_and_monitoring']['debug']) {
-            $message .= '- ' . __trans('Warning: Debug mode is enabled for your FOSSBilling installation.') . "\n";
+            $message .= '- ' . __trans('Warning: Debug mode is enabled for your billing platform installation.') . "\n";
             $status = $status <= $this->warn ? $this->warn : $status;
         }
 
@@ -73,11 +73,11 @@ class generalCheck implements \FOSSBilling\Interfaces\SecurityCheckInterface
          * Misc checks
          */
         if ($config['update_branch'] !== 'release') {
-            $message .= '- ' . __trans('Warning: FOSSBilling is configured to update to non-release versions of FOSSBilling.') . "\n";
+            $message .= '- ' . __trans('Warning: The upstream FOSSBilling updater is configured to install non-release builds.') . "\n";
             $status = $status <= $this->warn ? $this->warn : $status;
         }
         if (\FOSSBilling\Version::isPreviewVersion()) {
-            $message .= '- ' . __trans('Warning: You appear to be using a non-release version of FOSSBilling.') . "\n";
+            $message .= '- ' . __trans('Warning: You appear to be using a non-release upstream FOSSBilling build.') . "\n";
             $status = $status <= $this->warn ? $this->warn : $status;
         }
 

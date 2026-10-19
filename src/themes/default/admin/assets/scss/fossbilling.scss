@@ -1,6 +1,7 @@
 @use "flags";
 @use "theme_settings";
 @use "../../../../../../frontend/styles/shared-theme";
+@use "../../../../../../frontend/styles/sangatta-brand";
 
 // Let responsive tables use the available width before falling back to scrolling.
 // Individual cells can retain text-nowrap for values that must stay together.

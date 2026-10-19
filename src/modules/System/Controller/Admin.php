@@ -44,7 +44,7 @@ class Admin implements \FOSSBilling\InjectionAwareInterface
                 ],
                 [
                     'location' => 'system',
-                    'label' => __trans('Update FOSSBilling'),
+                    'label' => __trans('Upstream Updates'),
                     'index' => 100,
                     'uri' => $this->di['url']->adminLink('system/update'),
                     'class' => '',

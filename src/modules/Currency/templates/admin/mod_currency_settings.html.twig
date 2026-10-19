@@ -80,11 +80,11 @@
 
                         {% if sync_rate != 'never' %}
                             <div class="alert alert-success" role="alert">
-                                <strong class="me-1">{{ 'Success:'|trans }}</strong>{{ 'FOSSBilling is configured to automatically sync currency exchange rates.'|trans }}
+                                <strong class="me-1">{{ 'Success:'|trans }}</strong>{{ 'The platform is configured to automatically sync currency exchange rates.'|trans }}
                             </div>
                         {% else %}
                             <div class="alert alert-warning" role="alert">
-                                <strong class="me-1">{{ 'Warning:'|trans }}</strong>{{ 'FOSSBilling is not configured to automatically sync currency exchange rates.'|trans }}
+                                <strong class="me-1">{{ 'Warning:'|trans }}</strong>{{ 'The platform is not configured to automatically sync currency exchange rates.'|trans }}
                             </div>
                         {% endif %}
                     </div>
@@ -173,7 +173,7 @@
                                 <strong class="me-1">{{ 'Information:'|trans }}</strong>{{ 'Choose which exchange-rate provider to use and how often automated synchronization should run.'|trans }}
                             </div>
                             <h4 class="card-title mb-2">{{ 'Available Exchange Rate Data Providers'|trans }}</h4>
-                            <p class="text-secondary mb-3">{{ 'FOSSBilling supports several exchange-rate providers. By default it uses the ExchangeRate-API Open Access endpoint, which works without extra configuration.'|trans }}</p>
+                            <p class="text-secondary mb-3">{{ 'Several exchange-rate providers are supported. By default, the platform uses the ExchangeRate-API Open Access endpoint, which works without extra configuration.'|trans }}</p>
                             <table class="table">
                                 <thead>
                                     <tr>
@@ -215,7 +215,7 @@
                                     </tr>
                                   </tbody>
                             </table>
-                            <p class="text-muted mb-1">{{ 'When using ExchangeRate-API, their API informs FOSSBilling when the next update will occur, which makes automated syncing more efficient.'|trans }}</p>
+                            <p class="text-muted mb-1">{{ 'When using ExchangeRate-API, their API informs the platform when the next update will occur, which makes automated syncing more efficient.'|trans }}</p>
                             <p class="text-muted mb-4">{{ 'To the best of our knowledge, Currency Data API and currencylayer are both owned by APILayer and expose the same data through different APIs.'|trans }}</p>
                             <div class="row g-3">
                                 <div class="col-lg-6">

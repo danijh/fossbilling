@@ -36,7 +36,7 @@ class phpVersion implements \FOSSBilling\Interfaces\SecurityCheckInterface
 
     public function getDescription(): string
     {
-        return __trans('Checks if the PHP version FOSSBilling is running on is still receiving security support.');
+        return __trans('Checks if the PHP version the billing platform is running on is still receiving security support.');
     }
 
     public function performCheck(): SecurityCheckResult

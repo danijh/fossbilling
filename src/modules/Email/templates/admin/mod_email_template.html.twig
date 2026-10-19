@@ -60,7 +60,7 @@
                             <input type="hidden" name="id" value="{{ template.id }}">
                             {% embed 'partial_admin_form_card.html.twig' with {
                                 title: 'Manage Email Template'|trans,
-                                subtitle: 'Email templates can receive variables from FOSSBilling. Available variables are listed under the Variables tab, and preview will render the current content using example values.'|trans
+                                subtitle: 'Email templates can receive variables from the billing platform. Available variables are listed under the Variables tab, and preview will render the current content using example values.'|trans
                             } %}
                                 {% block form_content %}
                                     {% if not can_manage_templates %}
@@ -274,7 +274,7 @@ Link to login form: <{{ 'login'|url(area: 'client') }}>
 
 Email signature: {{ guest.system_email.signature }}
 
-FOSSBilling version: {{ FOSSBillingVersion }}
+Billing platform version: {{ FOSSBillingVersion }}
 
 Today's date: {{ 'now'|date('Y-m-d') }}
 

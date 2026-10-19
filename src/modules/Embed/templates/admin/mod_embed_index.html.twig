@@ -1,5 +1,5 @@
 {% extends request.ajax ? "layout_blank.html.twig" : "layout_default.html.twig" %}
-{% block meta_title %}{{ 'Embed Parts of FOSSBilling'|trans }}{% endblock %}
+{% block meta_title %}{{ 'Embed Platform Features'|trans }}{% endblock %}
 {% set active_menu = 'extensions' %}
 {% set snippets = [
     {
@@ -23,7 +23,7 @@
     {
         id: 'contact-us-form',
         title: 'Contact Us Form'|trans,
-        description: 'Add a hosted contact form that submits into your FOSSBilling support flow.'|trans,
+        description: 'Add a hosted contact form that submits into your support flow.'|trans,
         width: 400,
         height: 450,
         preview_url: 'embed/contact'|url(area: 'client'),

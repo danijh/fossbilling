@@ -2,7 +2,7 @@
   "id": "branding",
   "type": "mod",
   "name": "Branding",
-  "description": "Show your support by voluntarily displaying references to FOSSBilling.",
+  "description": "Display the company branding tagline in the customer portal footer.",
   "icon_url": "icon.svg",
   "homepage_url": "https://fossbilling.org",
   "author": "FOSSBilling",

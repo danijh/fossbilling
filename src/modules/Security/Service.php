@@ -44,7 +44,7 @@ class Service
             'run_checks' => [
                 'type' => 'bool',
                 'display_name' => __trans('Run security checks'),
-                'description' => __trans('Allows the staff member to run security checks on the FOSSBilling installation.'),
+                'description' => __trans('Allows the staff member to run security checks on the billing platform installation.'),
             ],
             'manage_rate_limits' => [
                 'type' => 'bool',

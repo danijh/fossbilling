@@ -1,0 +1,28 @@
+:root {
+    --sc-ink: #0d233a;
+    --sc-teal: #2f8d83;
+    --sc-mist: #b7b6b6;
+    --sc-ember: #d8570a;
+
+    --bs-primary: var(--sc-ink);
+    --bs-primary-rgb: 13, 35, 58;
+    --bs-secondary: var(--sc-teal);
+    --bs-secondary-rgb: 47, 141, 131;
+    --bs-warning: var(--sc-ember);
+    --bs-warning-rgb: 216, 87, 10;
+    --bs-border-color: var(--sc-mist);
+    --bs-link-color: var(--sc-teal);
+    --bs-link-hover-color: #26736b;
+
+    --tblr-primary: var(--sc-ink);
+    --tblr-primary-rgb: 13, 35, 58;
+    --tblr-primary-fg: #fff;
+    --tblr-secondary: var(--sc-teal);
+    --tblr-secondary-rgb: 47, 141, 131;
+    --tblr-secondary-fg: #fff;
+    --tblr-warning: var(--sc-ember);
+    --tblr-warning-rgb: 216, 87, 10;
+    --tblr-border-color: var(--sc-mist);
+    --tblr-link-color: var(--sc-teal);
+    --tblr-link-hover-color: #26736b;
+}

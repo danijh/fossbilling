@@ -356,7 +356,7 @@
                         </form>
                     </section>
                     <div class="ms-1 mt-1 mb-1">
-                        <p>{{ 'FOSSBilling queues emails to have them be sent via cron in the background. Here you may find the list of queued emails and how many times the system has tried to send them.'|trans }}</p>
+                        <p>{{ 'The platform queues emails to be sent by cron in the background. Here you may find the list of queued emails and how many times the system has tried to send them.'|trans }}</p>
                         <p>{{ 'Emails that have been sent or that failed to be sent will not be listed here.'|trans }}</p>
                     </div>
                     <div class="table-responsive">
@@ -428,7 +428,7 @@
                     <form method="post" action="{{ 'extension/config_save'|api_url }}" {{ fb_api_form({ message: 'Email Settings Updated'|trans}) }}>
                         <div class="card-body">
                             <div class="alert alert-info" role="alert">
-                                <strong class="me-1">{{ 'Information:'|trans }}</strong>{{ 'FOSSBilling sends email using Sendmail by default, or you can configure SMTP, SendGrid, or a custom Symfony mailer DSN.'|trans }}
+                                <strong class="me-1">{{ 'Information:'|trans }}</strong>{{ 'The platform sends email using Sendmail by default, or you can configure SMTP, SendGrid, or a custom Symfony mailer DSN.'|trans }}
                             </div>
 
                             <h4 class="card-title mb-2">{{ 'Sender Identity'|trans }}</h4>

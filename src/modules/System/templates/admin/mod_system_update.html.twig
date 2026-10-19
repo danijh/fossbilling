@@ -1,6 +1,6 @@
 {% extends request.ajax ? 'layout_blank.html.twig' : 'layout_default.html.twig' %}
 
-{% block meta_title %}{{ 'Update FOSSBilling'|trans }}{% endblock %}
+{% block meta_title %}{{ 'Upstream Updates'|trans }}{% endblock %}
 {% set active_menu = 'system' %}
 
 {% block content %}
@@ -23,15 +23,15 @@
         {% set updateButtonClass = 'btn-primary' %}
         {% set updateConfirmTitle = 'Install latest preview build?'|trans %}
         {% set updateModalType = 'confirm' %}
-        {% set updateModalContent = 'Preview builds may contain unreleased changes, regressions, or incomplete migrations. Back up your files and database, and avoid using this on production installations unless you are prepared to troubleshoot issues.'|trans %}
+        {% set updateModalContent = 'Preview builds are upstream FOSSBilling code and may replace Sangatta Cloud customizations. They can also contain unreleased changes, regressions, or incomplete migrations. Back up your files and database, and avoid production use unless you are prepared to troubleshoot issues.'|trans %}
         {% set updateModalButton = 'Install Preview Build'|trans %}
     {% else %}
-        {% set updateButtonLabel = 'Update FOSSBilling'|trans %}
+        {% set updateButtonLabel = 'Install Upstream Release'|trans %}
         {% set updateButtonClass = 'btn-primary' %}
-        {% set updateConfirmTitle = 'Update FOSSBilling?'|trans %}
+        {% set updateConfirmTitle = 'Install upstream release?'|trans %}
         {% set updateModalType = 'confirm' %}
-        {% set updateModalContent = 'Before continuing, back up your FOSSBilling files and database. This will download and install the latest available FOSSBilling release, enable maintenance mode, clear the cache, and log you out of the admin area. After logging back in, you will be asked to finalize the update.'|trans %}
-        {% set updateModalButton = 'Update FOSSBilling'|trans %}
+        {% set updateModalContent = 'Back up your files and database before continuing. This installs the latest official FOSSBilling release and may replace Sangatta Cloud customizations. The updater enables maintenance mode, clears the cache, and logs you out. After logging back in, you will be asked to finalize the update.'|trans %}
+        {% set updateModalButton = 'Install Upstream Release'|trans %}
     {% endif %}
     <div class="row row-cards">
         <div class="col-12">
@@ -39,7 +39,7 @@
                 <div class="card-header">
                     <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 w-100">
                         <div>
-                            <h3 class="card-title">{{ 'FOSSBilling Updates'|trans }}</h3>
+                            <h3 class="card-title">{{ 'Upstream Updates'|trans }}</h3>
                             <p class="card-subtitle">{{ isPreviewBranch ? 'Install preview builds and review update status.'|trans : 'Review release notes, check for updates, and install available platform updates.'|trans }}</p>
                         </div>
                         {% if isPreviewBranch %}
@@ -48,6 +48,9 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="alert alert-warning" role="alert">
+                        {{ 'This updater downloads official FOSSBilling releases. Since this installation includes Sangatta Cloud customizations, an upstream update may replace local changes. Back up first, then review and reapply fork changes from Git if needed.'|trans }}
+                    </div>
                     {% if updateCandidateAvailable %}
                         {% if not phpVersionSupported %}
                             <div class="alert alert-danger" role="alert">
@@ -56,7 +59,7 @@
                         {% endif %}
                         {% if not updateReady %}
                             <div class="alert alert-danger" role="alert">
-                                <strong class="me-1">{{ 'Update cannot start:'|trans }}</strong>{{ 'FOSSBilling does not have sufficient filesystem permissions to perform the update on this server. Please review the issues below and resolve them before attempting the update again.'|trans }}
+                                <strong class="me-1">{{ 'Update cannot start:'|trans }}</strong>{{ 'The updater does not have sufficient filesystem permissions to perform the update on this server. Please review the issues below and resolve them before attempting the update again.'|trans }}
                                 <ul class="mt-2 mb-0">
                                     {% for issue in readinessIssues %}
                                         <li><code>{{ issue.path }}</code>: {{ issue.message }}</li>
@@ -67,7 +70,7 @@
                         {% if isPreviewBranch %}
                             <h4 class="mb-2">{{ 'Preview Build Updates'|trans }}</h4>
                             {% if updateAvailable %}
-                                <p>{{ 'FOSSBilling'|trans }} <strong>{{ update_info['version'] }}</strong> {{ 'is available for download.'|trans }}</p>
+                                <p>{{ 'Upstream FOSSBilling release'|trans }} <strong>{{ update_info['version'] }}</strong> {{ 'is available for download.'|trans }}</p>
                             {% else %}
                                 <div class="alert alert-success" role="alert">
                                     {{ 'You are already running the latest available preview build. You can still reinstall it below if needed.'|trans }}
@@ -81,7 +84,7 @@
                                 <a class="ms-1" href="{{ previewCompareUrl }}" target="_blank" rel="noopener noreferrer">{{ 'View GitHub Comparison'|trans }}</a>
                             </p>
                         {% else %}
-                            <h4 class="mb-0">{{ 'Update Release Notes'|trans }} ({{ FOSSBillingVersion }} => {{ update_info['version'] }})</h4>
+                            <h4 class="mb-0">{{ 'Upstream Release Notes'|trans }} ({{ FOSSBillingVersion }} => {{ update_info['version'] }})</h4>
                             {% if updateType == 2 %}
                                 <div class="alert alert-warning" role="alert">
                                     <strong class="me-1">{{ 'Important:'|trans }}</strong>{{ 'This update is considered to be a major update, you should check the release notes for any breaking changes.'|trans }}
@@ -96,7 +99,7 @@
                         {% endif %}
                     {% else %}
                         <h2 class="card-title">{{ 'There Is No Update Available'|trans }}</h2>
-                        <p>{{ 'You appear to be running the latest version of FOSSBilling, so no action is needed at the moment. If you think this is a mistake, you may use the button below to check again.'|trans }}</p>
+                        <p>{{ 'You appear to be running the latest version of the billing platform, so no action is needed at the moment. If you think this is a mistake, you may use the button below to check again.'|trans }}</p>
                     {% endif %}
                 </div>
                 <div class="card-footer">
@@ -104,7 +107,7 @@
                         <div class="form-check mb-3">
                             <input class="form-check-input" type="checkbox" id="update-backup-acknowledgement" data-update-backup-acknowledgement>
                             <label class="form-check-label" for="update-backup-acknowledgement">
-                                {{ 'I have backed up the FOSSBilling files and database.'|trans }}
+                                {{ 'I have backed up the billing platform files and database.'|trans }}
                             </label>
                             <div class="form-text">{{ 'The update button is enabled only after confirming that backups are available.'|trans }}</div>
                         </div>
@@ -120,7 +123,7 @@
                                     preventNavigation: true,
                                     loading: {
                                         target: '#update-progress',
-                                        button: 'Updating FOSSBilling...'|trans,
+                                        button: 'Installing upstream release...'|trans,
                                         message: 'The update is running and can take several minutes. Keep this tab open and do not retry unless an error is shown.'|trans
                                     }
                                 }) }}>
@@ -163,7 +166,7 @@
                     <div class="d-flex flex-wrap align-items-start justify-content-between gap-2 w-100">
                         <div>
                             <h3 class="card-title">{{ 'Database & Configuration Patches'|trans }}</h3>
-                            <p class="card-subtitle">{{ 'Keep database structure and settings aligned with the installed FOSSBilling version.'|trans }}</p>
+                            <p class="card-subtitle">{{ 'Keep database structure and settings aligned with the installed platform version.'|trans }}</p>
                         </div>
                         <span class="badge {{ behindOnPatches ? 'badge-outline text-warning' : 'badge-outline text-success' }}">{{ behindOnPatches ? 'Pending'|trans : 'Up to Date'|trans }}</span>
                     </div>
@@ -171,11 +174,11 @@
                 <div class="card-body">
                     {% if behindOnPatches %}
                         <div class="alert alert-warning" role="alert">
-                            <strong class="me-1">{{ 'Database Patches Pending:'|trans }}</strong>{{ 'Apply the pending database patches to keep this installation aligned with the installed FOSSBilling files.'|trans }}
+                            <strong class="me-1">{{ 'Database Patches Pending:'|trans }}</strong>{{ 'Apply the pending database patches to keep this installation aligned with the installed platform files.'|trans }}
                         </div>
                     {% endif %}
-                    <p>{{ 'Database patches are small migrations that update FOSSBilling database tables and settings after the application files change.'|trans }}</p>
-                    <p class="text-secondary mb-0">{{ 'Update patches are automatically run after FOSSBilling updates. Use the manual action here only when FOSSBilling reports pending patches or when troubleshooting update issues.'|trans }}</p>
+                    <p>{{ 'Database patches are small migrations that update billing platform tables and settings after the application files change.'|trans }}</p>
+                    <p class="text-secondary mb-0">{{ 'Update patches are automatically run after upstream releases. Use the manual action here only when the platform reports pending patches or when troubleshooting update issues.'|trans }}</p>
                 </div>
                 <div class="card-footer">
                     <div class="d-flex flex-wrap gap-2">

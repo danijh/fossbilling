@@ -184,9 +184,9 @@ LOCK TABLES `support_kb_article` WRITE;
 
 INSERT INTO `support_kb_article` (`id`, `kb_article_category_id`, `views`, `title`, `content`, `slug`, `status`, `created_at`, `updated_at`)
 VALUES
-	(1,2,0,'How to contact support','Registered clients can contact our support team:\n------------------------------------------------------------\n\n* Login to clients area\n* Select **Support** menu item\n* Click **Submit new ticket**\n* Fill the form and press *Submit*\n\nGuests can contact our support team:\n------------------------------------------------------------\n\n* Use our contact form.\n* Fill the form and click *Submit*\n','how-to-contact-support','active',NOW(),NOW()),
-    (2,2,0,'How to place a new order','To place a new order, follow these steps:\n------------------------------------------------------------\n\n* Select the product/service you would like to order via the *Order* page.\n* Depending on your selected product/service, you might need to provide additional information to complete the order request.\n* Click \"Continue\". Your selected product/service will now be in the shopping cart.\n* If you have a promo code, you can apply it now and get a discount.\n* Click on \"Checkout\" button to proceed with the checkout process.\n    * If you are already logged in, you will be automatically redirected to the invoice for the newly purchased product/service.\n    * If you are a registered client but not logged in, you can provide your login details.\n    * If you have never purchased any service from us, please fill out the client sign up form and then continue the checkout process.\n* Choose your preferred payment method. A list of all available payment methods will be listed below the invoice details.\n* You will be redirected to the payment page, through which you can pay for the product/service you would like to order. \n* After successful payment, you will be redirected to the invoice page.\n* Depending on selected services your order may be reviewed and activated by our staff members, otherwise it will be activated automatically.\n* You will receive a confirmation email once your order is active, at which time you will be able to login and manage your services.\n','how-to-place-new-order','active',NOW(),NOW()),
-	(3,2,0,'Example article','Example article heading\n------------------------------------------------------------\n\nThis is a placeholder article. Replace with helpful content for clients, such as guides, tutorials, or FAQs.','example-article','active',NOW(),NOW());
+	(1,2,0,'How to contact support','Registered clients can contact our support team:\n------------------------------------------------------------\n\n* Login to clients area\n* Select **Support** menu item\n* Click **Submit new ticket**\n* Fill the form and press *Submit*\n\nGuests can contact our support team:\n------------------------------------------------------------\n\n* Use our contact form.\n* Fill the form and click *Submit*\n','how-to-contact-support','draft',NOW(),NOW()),
+    (2,2,0,'How to place a new order','To place a new order, follow these steps:\n------------------------------------------------------------\n\n* Select the product/service you would like to order via the *Order* page.\n* Depending on your selected product/service, you might need to provide additional information to complete the order request.\n* Click \"Continue\". Your selected product/service will now be in the shopping cart.\n* If you have a promo code, you can apply it now and get a discount.\n* Click on \"Checkout\" button to proceed with the checkout process.\n    * If you are already logged in, you will be automatically redirected to the invoice for the newly purchased product/service.\n    * If you are a registered client but not logged in, you can provide your login details.\n    * If you have never purchased any service from us, please fill out the client sign up form and then continue the checkout process.\n* Choose your preferred payment method. A list of all available payment methods will be listed below the invoice details.\n* You will be redirected to the payment page, through which you can pay for the product/service you would like to order. \n* After successful payment, you will be redirected to the invoice page.\n* Depending on selected services your order may be reviewed and activated by our staff members, otherwise it will be activated automatically.\n* You will receive a confirmation email once your order is active, at which time you will be able to login and manage your services.\n','how-to-place-new-order','draft',NOW(),NOW()),
+	(3,2,0,'Draft support article','Add verified guidance for customers before publishing.','draft-support-article','draft',NOW(),NOW());
 
 /*!40000 ALTER TABLE `support_kb_article` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -215,9 +215,9 @@ LOCK TABLES `post` WRITE;
 
 INSERT INTO `post` (`id`, `admin_id`, `title`, `description`, `content`, `slug`, `status`, `image`, `section`, `publish_at`, `published_at`, `expires_at`, `created_at`, `updated_at`)
 VALUES
-	(1,1,'FOSSBilling needs your donations','Donations are crucial for the success and sustainability of FOSSBilling and other open-source projects. We need your help.','Donations are crucial for the success and sustainability of FOSSBilling and other open-source projects. Without financial support from users and the broader community, it is difficult for these projects to continue to grow and evolve.\nDonations help to cover the costs of development and maintenance. Developing and maintaining software requires time and resources, and without financial support, it can be challenging for open-source projects to sustain their efforts.\n\nThe FOSSBilling project has expenses such as hosting, hardware, software, and other costs associated with developing and maintaining FOSSBilling and other open-source projects. Your donations also help cover some of the maintainers'' expenses.\nClick [here](https://fossbilling.org/donate) to donate to the FOSSBilling project.','fossbilling-needs-your-donations','active',NULL,NULL,NULL,NULL,NULL,NOW(),NOW()),
-	(2,1,'Check out great features of FOSSBilling','FOSSBilling supports automated billing, invoicing, product provisioning', '* Supports automated billing, invoicing, product provisioning\n* Automatically create accounts as soon as the payment is received, suspend when account becomes overdue, terminate when a specified amount of time passes.\n* FOSSBilling is perfectly created to sell shared and reseller hosting accounts, software licenses and downloadable products.\n* Integrated helpdesk, knowledgebase, news and announcements system.\n','great-features-of-fossbilling','active',NULL,NULL,NULL,NULL,NULL,NOW(),NOW()),
-	(3,1,'FOSSBilling is customizable','You can extend FOSSBilling with typed event listeners.','* You can extend FOSSBilling with typed event listeners. For example, send an SMS notification when a new client signs up.\n* Create custom theme for your client interface\n','fossbilling-is-customizable','active',NULL,NULL,NULL,NULL,NULL,NOW(),NOW());
+	(1,1,'Welcome to Sangatta Cloud','Draft your company introduction and service details.','Add your introduction, available services, and contact information before publishing.','welcome-to-sangatta-cloud','draft',NULL,NULL,NULL,NULL,NULL,NOW(),NOW()),
+	(2,1,'Sangatta Cloud services','Draft details about the services you offer.','Add accurate product and service information before publishing.','sangatta-cloud-services','draft',NULL,NULL,NULL,NULL,NULL,NOW(),NOW()),
+	(3,1,'Platform updates','Draft announcement for platform updates.','Add an update before publishing.','platform-updates','draft',NULL,NULL,NULL,NULL,NULL,NOW(),NOW());
 
 /*!40000 ALTER TABLE `post` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -245,7 +245,7 @@ LOCK TABLES `product` WRITE;
 
 INSERT INTO `product` (`id`, `product_category_id`, `product_payment_id`, `form_id`, `title`, `slug`, `description`, `unit`, `active`, `status`, `hidden`, `is_addon`, `setup`, `addons`, `icon_url`, `allow_quantity_select`, `stock_control`, `quantity_in_stock`, `plugin`, `plugin_config`, `upgrades`, `priority`, `config`, `created_at`, `updated_at`, `type`)
 VALUES
-	(1,1,NULL,NULL,'Domains registration and transfer','domain-checker',NULL,'product',1,'enabled',0,0,'after_payment',NULL,NULL,0,0,0,NULL,NULL,NULL,1,NULL,NOW(),NOW(),'domain');
+	(1,1,NULL,NULL,'Domains registration and transfer','domain-checker',NULL,'product',0,'disabled',0,0,'after_payment',NULL,NULL,0,0,0,NULL,NULL,NULL,1,NULL,NOW(),NOW(),'domain');
 
 /*!40000 ALTER TABLE `product` ENABLE KEYS */;
 UNLOCK TABLES;
@@ -305,19 +305,19 @@ LOCK TABLES `setting` WRITE;
 INSERT INTO `setting` (`id`, `param`, `value`, `public`, `category`, `hash`, `created_at`, `updated_at`)
 VALUES
 	(1,'last_patch','128',0,NULL,NULL,NOW(),NOW()),
-	(2,'company_name','Company Name',0,NULL,NULL,NOW(),NOW()),
-	(3,'company_email','support@yourcompany.com',0,NULL,NULL,NOW(),NOW()),
-	(4,'company_signature','FOSSBilling.org - Client Management, Invoicing and Support Software',0,NULL,NULL,NOW(),NOW()),
+	(2,'company_name','Sangatta Cloud',0,NULL,NULL,NOW(),NOW()),
+	(3,'company_email','',0,NULL,NULL,NOW(),NOW()),
+	(4,'company_signature','Sangatta Cloud | Cloud andal untuk bisnis yang terus tumbuh.',0,NULL,NULL,NOW(),NOW()),
 	(5,'company_logo','public/branding/logo.svg',0,NULL,NULL,NOW(),NOW()),
 	(6,'company_logo_dark','public/branding/logo-dark.svg',0,NULL,NULL,NOW(),NOW()),
-	(7,'company_address_1','Demo address line 1',0,NULL,NULL,NOW(),NOW()),
-	(8,'company_address_2','Demo address line 2',0,NULL,NULL,NOW(),NOW()),
-	(9,'company_address_3','Demo address line 3',0,NULL,NULL,NOW(),NOW()),
-	(10,'company_tel','+123 456 12345',0,NULL,NULL,NOW(),NOW()),
-	(11,'company_tos','This is a sample Terms of Service. Please replace this with your own legal terms.\nInclude details such as:\n- Your company name and address\n- Conditions of service\n- Payment and refund policies\n- Service-level agreements (SLAs)',0,NULL,NULL,NOW(),NOW()),
-	(12,'company_privacy_policy','This is a sample Privacy Policy. Please replace this with your company''s actual privacy terms.\nInclude details such as:\n- How customer data is collected and used\n- Security measures\n- Third-party sharing policies\n- Customer rights',0,NULL,NULL,NOW(),NOW()),
-	(13,'company_note','This is a placeholder for your About Us page. It will be available in /about-us.\nReplace this with information about your company, such as:\n- Your company history and mission\n- Services offered\n- Values and vision\n- Contact or support information\n- Any other details you want your clients to know about your business',0,NULL,NULL,NOW(),NOW()),
-	(14,'invoice_series','FOSS',0,NULL,NULL,NOW(),NOW()),
+	(7,'company_address_1','',0,NULL,NULL,NOW(),NOW()),
+	(8,'company_address_2','',0,NULL,NULL,NOW(),NOW()),
+	(9,'company_address_3','',0,NULL,NULL,NOW(),NOW()),
+	(10,'company_tel','',0,NULL,NULL,NOW(),NOW()),
+	(11,'company_tos','',0,NULL,NULL,NOW(),NOW()),
+	(12,'company_privacy_policy','',0,NULL,NULL,NOW(),NOW()),
+	(13,'company_note','',0,NULL,NULL,NOW(),NOW()),
+	(14,'invoice_series','SC-',0,NULL,NULL,NOW(),NOW()),
 	(15,'invoice_due_days','5',0,NULL,NULL,NOW(),NOW()),
 	(16,'invoice_auto_issue','1',0,NULL,NULL,NOW(),NOW()),
 	(17,'invoice_issue_days_before_expire','14',0,NULL,NULL,NOW(),NOW()),
@@ -356,7 +356,7 @@ LOCK TABLES `support_helpdesk` WRITE;
 
 INSERT INTO `support_helpdesk` (`id`, `name`, `email`, `close_after`, `can_reopen`, `signature`, `created_at`, `updated_at`)
 VALUES
-	(1,'General','info@yourcompany.com',24,0,'Always a pleasure to help. Wishing you a great day!',NOW(),NOW());
+	(1,'General','',24,0,'Always a pleasure to help. Wishing you a great day!',NOW(),NOW());
 
 /*!40000 ALTER TABLE `support_helpdesk` ENABLE KEYS */;
 UNLOCK TABLES;

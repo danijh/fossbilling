@@ -150,7 +150,7 @@
                         {% else %}
                             {% embed 'partial_admin_form_card.html.twig' with {
                                 title: group.name,
-                                subtitle: 'This is a protected system group. Its permissions are controlled by FOSSBilling and cannot be edited.'|trans
+                                subtitle: 'This is a protected system group. Its permissions are controlled by the platform and cannot be edited.'|trans
                             } %}
                                 {% block form_content %}
                                     <div class="alert alert-info mb-0" role="alert">

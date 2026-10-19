@@ -213,7 +213,7 @@
                                     <input class="form-check-input" type="checkbox" name="auto_detect_locale" id="auto_detect_locale_yes" value="1" {% if localization.auto_detect_locale %}checked{% endif %}>
                                     <span class="form-check-label">{{ 'Automatic Browser Language Detection'|trans }}</span>
                                 </label>
-                                <small class="form-text">{{ 'When enabled, guests without a saved language preference start in the best match from their browser. When disabled, FOSSBilling uses the configured default locale until the user explicitly selects a language.'|trans }}</small>
+                                <small class="form-text">{{ 'When enabled, guests without a saved language preference start in the best match from their browser. When disabled, the billing platform uses the configured default locale until the user explicitly selects a language.'|trans }}</small>
                             </div>
                         </div>
                         <div class="card-footer text-end">
@@ -384,10 +384,10 @@
 
                 <div class="tab-pane fade" id="tab-about" role="tabpanel">
                     <div class="card-body">
-                        <h4 class="card-title mb-3">{{ 'About FOSSBilling'|trans }}</h4>
+                        <h4 class="card-title mb-3">{{ 'About Sangatta Cloud'|trans }}</h4>
                         <div class="datagrid">
                             <div class="datagrid-item">
-                                <div class="datagrid-title">{{ 'FOSSBilling version'|trans }}</div>
+                                <div class="datagrid-title">{{ 'Upstream base version'|trans }}</div>
                                 <div class="datagrid-content">{{ FOSSBillingVersion }}</div>
                             </div>
                             <div class="datagrid-item">
@@ -425,7 +425,7 @@
                                                 <div class="border rounded px-3 py-2 mb-2 d-flex justify-content-between align-items-center">
                                                     <span>
                                                     {% if module.status == 'core' %}
-                                                        <svg class="icon" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ 'This is a core module included with FOSSBilling and cannot be disabled.'|trans }}">
+                                                        <svg class="icon" data-bs-toggle="tooltip" data-bs-placement="top" title="{{ 'This is a core module included with the billing platform and cannot be disabled.'|trans }}">
                                                             <use href="#settings" />
                                                         </svg>
                                                     {% endif %}
@@ -458,7 +458,7 @@
                                 </span>
                                 <div>
                                     <div class="fw-bold">{{ 'Error reporting is enabled.'|trans }}</div>
-                                    <div class="text-muted small">{{ 'This FOSSBilling instance is automatically sending error reports which helps us improve the software and keep it stable. Thanks!'|trans }}</div>
+                                    <div class="text-muted small">{{ 'This instance automatically sends error reports to the upstream project maintainers to help improve the software and keep it stable.'|trans }}</div>
                                 </div>
                             </div>
                             {% if can_toggle_error_reporting %}
@@ -479,7 +479,7 @@
                                 </span>
                                 <div>
                                     <div class="fw-bold">{{ 'Error reporting is disabled.'|trans }}</div>
-                                    <div class="text-muted small">{{ 'Please consider enabling error reporting. This allows us to provide better technical support and helps us proactively improve FOSSBilling.'|trans }}</div>
+                                    <div class="text-muted small">{{ 'Please consider enabling error reporting. Reports are sent to the upstream project maintainers and help improve the underlying software.'|trans }}</div>
                                 </div>
                             </div>
                             {% if can_toggle_error_reporting %}
@@ -491,7 +491,7 @@
                             {% endif %}
                         </div>
                         {% endif %}
-                        <p>{{ "FOSSBilling optionally includes automated error reporting to help aid the project's development and stability. To find the most up-to-date information about it, you should review the links and information below."|trans }}</p>
+                        <p>{{ "Automated error reporting is optional and helps the upstream project's development and stability. Review the links and information below for details."|trans }}</p>
                         <ul>
                             <li><a href="https://docs.fossbilling.org/maintenance/error-reporting/" target="_blank">{{ 'Learn more about error reporting'|trans }}</a></li>
                             <li>
@@ -499,7 +499,7 @@
                                 <span class="text-muted">({{ 'Last applicable behavior change: '|trans }} {{ last_change }})</span>
                             </li>
                         </ul>
-                        <span class="text-muted">{{ "The last applicable behavior change represents the most recent FOSSBilling version that changed error reporting which also applies to this current version. There may have been more recent changes than what's listed."|trans }}</span>
+                        <span class="text-muted">{{ "The last applicable behavior change represents the most recent upstream release that changed error reporting and applies to this version. There may have been more recent changes than what's listed."|trans }}</span>
                     </div>
                 </div>
 
@@ -511,7 +511,7 @@
                         </div>
                         {% if can_manage_network_interface %}
                             <form method="post" action="{{ 'system/set_interface_ip'|api_url }}" {{ fb_api_form({ callback: 'onAfterInterfaceSet'}) }}>
-                                <p>{{ 'If your server has multiple network interfaces, you may select the default one for FOSSBilling to use when making requests here.'|trans }}</p>
+                                <p>{{ 'If your server has multiple network interfaces, you may select the default one for the billing platform to use when making requests here.'|trans }}</p>
 
                                 <div class="col-12 col-lg-3">
                                     <label for="interface">{{ 'Select the Default Network Interface:'|trans }}</label>
@@ -558,7 +558,7 @@
 
         FOSSBilling.api.admin.get('system/env', { ip: true }, function (ip) {
             if (ip) {
-                el.innerHTML = `<strong class="me-1">{{ 'Success:'|trans }}</strong>{{ 'With the current settings, your FOSSBilling instance will have an external IP address of: '|trans }}`;
+                el.innerHTML = `<strong class="me-1">{{ 'Success:'|trans }}</strong>{{ 'With the current settings, the billing platform instance will have an external IP address of: '|trans }}`;
                 el.appendChild(document.createTextNode(ip));
                 el.className = 'alert alert-success';
             } else {

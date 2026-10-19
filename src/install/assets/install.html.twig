@@ -4,7 +4,7 @@
     {% if alreadyInstalled %}
         <h1 class='red'>Already installed</h1>
 
-        <p>FOSSBilling already has a configuration file. To run the installer again, reset this instance first:</p>
+        <p>Sangatta Cloud Billing already has a configuration file. To run the installer again, reset this instance first:</p>
 
         <ol>
             <li>Delete your database tables or recreate your database.</li>
@@ -12,7 +12,7 @@
             <li>Refresh this page to restart setup.</li>
         </ol>
     {% else %}
-        <h1>Install FOSSBilling</h1>
+        <h1>Install Sangatta Cloud Billing</h1>
         <p class="installer-intro">Set up the database connection, create the first admin account, and choose the default billing options.</p>
 
         <progress id="overall-progress" value="0" max="4"></progress>
@@ -51,13 +51,13 @@
                             <tr>
                                 <td>Subfolder detection</td>
                                 <td class="red">FAIL</td>
-                                <td>FOSSBilling must be installed at the host document root, not in a subfolder. See the <a href='https://docs.fossbilling.org/maintenance/troubleshooting/#subfolder-installations' data-tooltip="Opens in a new tab." target='_blank'>troubleshooting documentation</a>.</td>
+                                <td>The billing portal must be installed at the host document root, not in a subfolder. See the <a href='https://docs.fossbilling.org/maintenance/troubleshooting/#subfolder-installations' data-tooltip="Opens in a new tab." target='_blank'>troubleshooting documentation</a>.</td>
                             </tr>
                         {% endif %}
                         <tr>
                             <td>Operating system</td>
                             <td class="{{ os_ok ? 'green' : 'orange'}}">{{ os }}</td>
-                            <td>{% if not os_ok %}FOSSBilling may not work correctly on this operating system.{% endif %}</td>
+                            <td>{% if not os_ok %}The billing portal may not work correctly on this operating system.{% endif %}</td>
                         </tr>
                         <tr>
                             <td>PHP version</td>
@@ -85,7 +85,7 @@
                                 <tr>
                                     <td>{{ file }}</td>
                                     <td class="red">FAIL</td>
-                                    <td>FOSSBilling cannot write to this file. <a href="https://docs.fossbilling.org/maintenance/troubleshooting/#permission-issues" target="_blank">Permission troubleshooting</a></td>
+                                    <td>The billing portal cannot write to this file. <a href="https://docs.fossbilling.org/maintenance/troubleshooting/#permission-issues" target="_blank">Permission troubleshooting</a></td>
                                 </tr>
                             {% endif %}
                         {% endfor %}
@@ -111,7 +111,7 @@
                 <details id="step-3">
                     <summary>Step 3 - Database Connection</summary>
 
-                    <p>Choose the database FOSSBilling should use, and enter its connection details.</p>
+                    <p>Choose the database for Sangatta Cloud Billing and enter its connection details.</p>
 
                     <fieldset>
                         {% set selectedDriver = request.database_driver|default(database_driver)|default('pdo_mysql') %}
@@ -191,10 +191,10 @@
 
                     <section class="option-section">
                         <h3>Public URL</h3>
-                        <p>Confirm the address customers and staff should use to access this FOSSBilling installation.</p>
+                        <p>Confirm the address customers and staff should use to access this billing portal.</p>
 
                         <fieldset>
-                            <label for="system_url">FOSSBilling URL <span class="red">*</span></label>
+                            <label for="system_url">Billing portal URL <span class="red">*</span></label>
                             <input type="url" id="system_url" name="system_url" value="{{ request.system_url|default(system_url) }}" placeholder="https://billing.example.com/" required>
                         </fieldset>
                     </section>
@@ -288,10 +288,10 @@
                     onClick="toggleModal(event)">
                 </a>
                 <h3>Error reporting</h3>
-                <p>Automated error reporting helps the FOSSBilling team identify defects and improve stability.</p>
+                <p>Automated error reporting helps the upstream software maintainers identify defects and improve stability.</p>
                 <p>Reports are collected using <a href="https://sentry.io/welcome/" target='_blank' data-tooltip="Opens in a new tab.">Sentry.io</a> and retained for up to 90 days under Sentry's <a href="https://sentry.io/security/" target='_blank' data-tooltip="Opens in a new tab.">security practices</a>.</p>
                 <p>Data scrubbing and filtering are applied to reduce the chance of sensitive information being recorded.</p>
-                <p>See <a href="https://docs.fossbilling.org/maintenance/error-reporting/" target='_blank' data-tooltip="Opens in a new tab.">the FOSSBilling documentation</a> for details about what is collected.</p>
+                <p>See <a href="https://docs.fossbilling.org/maintenance/error-reporting/" target='_blank' data-tooltip="Opens in a new tab.">the error reporting documentation</a> for details about what is collected.</p>
                 <footer>
                     <a href="#confirm"
                         role="button"

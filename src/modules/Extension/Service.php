@@ -536,7 +536,7 @@ class Service implements InjectionAwareInterface
         }
 
         if (!$this->di['extension_manager']->isExtensionCompatible($id)) {
-            throw new \FOSSBilling\InformationException('This extension is not compatible with your version of FOSSBilling. Please update FOSSBilling to the latest version and try again.');
+            throw new \FOSSBilling\InformationException('This extension is not compatible with your version of the billing platform. Please update the platform to the latest version and try again.');
         }
 
         $extractedPath = Path::join(PATH_CACHE, bin2hex(random_bytes(16)));

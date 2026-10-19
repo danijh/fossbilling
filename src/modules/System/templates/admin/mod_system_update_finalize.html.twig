@@ -20,8 +20,8 @@
     <div class="page page-center">
         <div class="container-tight py-4">
             <div class="text-center mb-4">
-                <div class="h1 mb-1">{{ 'Welcome to FOSSBilling %version%'|trans({'%version%': FOSSBillingVersion}) }}</div>
-                <p class="text-secondary mb-0">{{ 'Your update is installed. One final step is required before you use FOSSBilling.'|trans }}</p>
+                <div class="h1 mb-1">{{ 'Sangatta Cloud %version% Update'|trans({'%version%': FOSSBillingVersion}) }}</div>
+                <p class="text-secondary mb-0">{{ 'Your upstream update is installed. One final step is required before you use the billing platform.'|trans }}</p>
             </div>
 
             <div class="card card-md">
@@ -34,18 +34,18 @@
                                 </svg>
                             </div>
                             <p class="empty-title">{{ 'Update Finalization Complete'|trans }}</p>
-                            <p class="empty-subtitle text-secondary">{{ 'This FOSSBilling installation has already been finalized for the current version.'|trans }}</p>
+                            <p class="empty-subtitle text-secondary">{{ 'This installation has already been finalized for the current version.'|trans }}</p>
                             <div class="empty-action">
                                 <a class="btn btn-primary" href="{{ ''|url }}">{{ 'Go to Dashboard'|trans }}</a>
                             </div>
                         </div>
                     {% else %}
                         {% if finalized and not needsFinalize %}
-                            <p>{{ 'FOSSBilling has successfully applied the patches for version %version%.'|trans({'%version%': FOSSBillingVersion}) }}</p>
+                            <p>{{ 'The billing platform has successfully applied the patches for version %version%.'|trans({'%version%': FOSSBillingVersion}) }}</p>
                         {% elseif pendingPatches is same as(null) or pendingPatches is same as(0) %}
-                            <p>{{ 'You are updating your system to FOSSBilling %target_version%. The system needs to check and apply any pending update patches before you can proceed.'|trans({'%target_version%': FOSSBillingVersion}) }}</p>
+                            <p>{{ 'You are updating the billing platform to upstream version %target_version%. The system needs to check and apply any pending update patches before you can proceed.'|trans({'%target_version%': FOSSBillingVersion}) }}</p>
                         {% else %}
-                            <p>{{ 'You are updating your system to FOSSBilling %target_version%. The system needs to run %count% update patches before you can proceed.'|trans({'%target_version%': FOSSBillingVersion, '%count%': pendingPatches}) }}</p>
+                            <p>{{ 'You are updating the billing platform to upstream version %target_version%. The system needs to run %count% update patches before you can proceed.'|trans({'%target_version%': FOSSBillingVersion, '%count%': pendingPatches}) }}</p>
                         {% endif %}
 
                         {% if driftOutOfSync %}
@@ -78,7 +78,7 @@
                                         loading: {
                                             target: '#finalization-progress',
                                             button: 'Finalizing update...'|trans,
-                                            message: 'FOSSBilling is applying update patches. Keep this tab open until the request completes.'|trans
+                                            message: 'The billing platform is applying update patches. Keep this tab open until the request completes.'|trans
                                         }
                                     }) }}>
                                     <svg class="icon">

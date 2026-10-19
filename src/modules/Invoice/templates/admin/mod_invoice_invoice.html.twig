@@ -1062,7 +1062,7 @@
                                     {% endif %}
                                     {% if snapshot.offline is defined and snapshot.offline %}
                                     <dt class="col-sm-4 text-muted">{{ 'Refund type'|trans }}</dt>
-                                    <dd class="col-sm-8">{{ mf.text_badge('Offline'|trans, 'text-bg-warning') }} {{ 'The amount was returned outside FOSSBilling; the credit note below is its paper trail.'|trans }}</dd>
+                                    <dd class="col-sm-8">{{ mf.text_badge('Offline'|trans, 'text-bg-warning') }} {{ 'The amount was returned outside the billing platform; the credit note below is its paper trail.'|trans }}</dd>
                                     {% endif %}
                                     {% if snapshot.changed_fields is defined and snapshot.changed_fields %}
                                     <dt class="col-sm-4 text-muted">{{ 'Changed fields'|trans }}</dt>

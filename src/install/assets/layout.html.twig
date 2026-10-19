@@ -5,11 +5,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="./assets/css/pico.min.css" rel="stylesheet">
         <script src="./assets/js/modal.js"></script>
-        <title>FOSSBilling Installation</title>
+        <title>Sangatta Cloud Billing Setup</title>
         <style type="text/css">
             :root {
-                --fb-brand: #1c7ed6;
-                --fb-brand-dark: #1864ab;
+                --fb-brand: #0d233a;
+                --fb-brand-dark: #2f8d83;
                 --fb-surface: #ffffff;
                 --fb-border: #dbe3ec;
                 --fb-muted: #5f6c7b;
@@ -24,8 +24,8 @@
             }
             @media (prefers-color-scheme: dark) {
                 :root {
-                    --fb-brand: #4dabf7;
-                    --fb-brand-dark: #339af0;
+                    --fb-brand: #2f8d83;
+                    --fb-brand-dark: #26736b;
                     --fb-surface: #141e29;
                     --fb-border: #2b3a4a;
                     --fb-muted: #a8b3c2;
@@ -262,14 +262,13 @@
             <nav class="installer-nav">
                 <ul>
                     <li>
-                    <a href="./install.php" title="FOSSBilling">
-                        <img class="installer-logo-light" src="../public/branding/logo.svg" alt="FOSSBilling logo" height="50" width="238">
-                        <img class="installer-logo-dark" src="../public/branding/logo-dark.svg" alt="FOSSBilling logo" height="50" width="238">
+                    <a href="./install.php" title="Sangatta Cloud Billing">
+                        <img class="installer-logo-light" src="../public/branding/logo.svg" alt="Sangatta Cloud logo" height="50" width="50">
+                        <img class="installer-logo-dark" src="../public/branding/logo-dark.svg" alt="Sangatta Cloud logo" height="50" width="50">
                     </a></li>
                 </ul>
                 <ul>
-                    <li><a href="https://docs.fossbilling.org/" target="_blank" data-tooltip="Opens in a new window.">Documentation</a></li>
-                    <li><a href="https://github.com/FOSSBilling/FOSSBilling/issues" target="_blank" data-tooltip="Opens in a new window.">Bug Reports</a></li>
+                    <li><span>Cloud andal untuk bisnis yang terus tumbuh.</span></li>
                 </ul>
             </nav>
             <section class="installer-panel">
@@ -278,7 +277,7 @@
         </main>
         <footer class="container">
             <small>
-                <span>&copy; Copyright {{ 'now'|date('Y') }}. All rights reserved. Powered by <a href="https://fossbilling.org" title="FOSSBilling" target="_blank" data-tooltip="Opens in a new tab.">FOSSBilling {{version}}</a></span>
+                <span>&copy; {{ 'now'|date('Y') }} Sangatta Cloud. Cloud andal untuk bisnis yang terus tumbuh.</span>
             </small>
         </footer>
         {% block javascript %}{% endblock %}

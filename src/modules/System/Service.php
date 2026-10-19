@@ -91,12 +91,12 @@ class Service
             'invalidate_cache' => [
                 'type' => 'bool',
                 'display_name' => __trans('Invalidate Cache'),
-                'description' => __trans('Allows the staff member to invalidate the FOSSBilling cache from within the system settings.'),
+                'description' => __trans('Allows the staff member to invalidate the billing platform cache from within the system settings.'),
             ],
             'system_update' => [
                 'type' => 'bool',
-                'display_name' => __trans('Update FOSSBilling'),
-                'description' => __trans('Allows the staff member to update FOSSBilling.'),
+                'display_name' => __trans('Install Upstream Updates'),
+                'description' => __trans('Allows the staff member to install official upstream FOSSBilling releases. Updates may replace customizations in this fork.'),
             ],
             'recheck_update' => [
                 'type' => 'bool',
@@ -106,12 +106,12 @@ class Service
             'toggle_error_reporting' => [
                 'type' => 'bool',
                 'display_name' => __trans('Toggle Error Reporting'),
-                'description' => __trans('Allows the staff member to enable or disable error reporting for this FOSSBilling instance.'),
+                'description' => __trans('Allows the staff member to enable or disable error reporting for this instance.'),
             ],
             'manage_network_interface' => [
                 'type' => 'bool',
                 'display_name' => __trans('Manage the Network Interface'),
-                'description' => __trans('Allows the staff member to fetch a list of all local interface IP addresses and set the default network interface for FOSSBilling to use.'),
+                'description' => __trans('Allows the staff member to fetch a list of all local interface IP addresses and set the default network interface for the billing platform.'),
             ],
         ];
     }
@@ -353,7 +353,7 @@ class Service
                 $updateUrl = $this->di['url']->adminLink('system/update');
                 $messages[] = $this->createAdminAlert(
                     'info',
-                    __trans('FOSSBilling :version is available for download.', [':version' => $version]),
+                    __trans('Upstream FOSSBilling :version is available for download.', [':version' => $version]),
                     __trans('Update Available'),
                     [[
                         'link' => $updateUrl,
@@ -366,13 +366,13 @@ class Service
             $this->di['logger']->error($e->getMessage());
         }
 
-        // Check if FOSSBilling is behind on database patches
+        // Check if the installation is behind on database patches
         try {
             $updater = $this->di['updater'];
             if ($updater->isBehindOnDBPatches()) {
                 $messages[] = $this->createAdminAlert(
                     'warning',
-                    __trans('Your FOSSBilling database is behind on database patches. Apply the pending patches to avoid issues.'),
+                    __trans('The billing platform database is behind on patches. Apply the pending patches to avoid issues.'),
                     __trans('Database Patches Pending'),
                     [[
                         'link' => $this->di['url']->adminLink('system/update'),
@@ -392,7 +392,7 @@ class Service
             if (!$last_exec) {
                 $messages[] = $this->createAdminAlert(
                     'danger',
-                    __trans('Cron was never executed, please ensure you have configured the cronjob or else scheduled tasks within FOSSBilling will not behave correctly.'),
+                    __trans('Cron was never executed. Please configure the cron job or scheduled tasks will not behave correctly.'),
                     buttons: [[
                         'link' => $cronUrl,
                         'text' => __trans('Open Cron Settings'),
@@ -402,7 +402,7 @@ class Service
             } elseif ((time() - strtotime((string) $last_exec)) / 60 >= 15) {
                 $messages[] = $this->createAdminAlert(
                     'danger',
-                    __trans("FOSSBilling has detected that cron hasn't been run in an abnormal time period. Please ensure the cronjob is configured to be run every 5 minutes."),
+                    __trans("The billing platform has detected that cron hasn't run in an abnormal time period. Please ensure it is configured to run every 5 minutes."),
                     buttons: [[
                         'link' => $cronUrl,
                         'text' => __trans('Open Cron Settings'),
@@ -427,7 +427,7 @@ class Service
                 if (!$lastErrorReportingNudge) {
                     // The user upgraded from a version that didn't have error reporting functionality, so let's nudge them about it now.
                     return [
-                        'text' => __trans("We'd appreciate it if you'd consider opting into error reporting for FOSSBilling. Doing so will help us improve the software and provide you with a better experience. (Message will remain for 15 minutes)"),
+                        'text' => __trans("Consider opting into error reporting to help the upstream project maintainers improve the software. (Message will remain for 15 minutes)"),
                         'url' => $url,
                     ];
                 } elseif ((version_compare(SentryHelper::last_change, $lastErrorReportingNudge) === 1) && Config::getProperty('debug_and_monitoring.report_errors', false) && !Version::isPreviewVersion()) {
@@ -438,7 +438,7 @@ class Service
                     $item->expiresAfter(60 * 60 * 24);
 
                     return [
-                        'text' => __trans("Error reporting in FOSSBilling has changed since you last reviewed it. You may want to consider reviewing the changes to see what's been changed. (This message will remain for 24 hours)"),
+                        'text' => __trans("Upstream error reporting has changed since you last reviewed it. Review the changes before continuing to send reports. (This message will remain for 24 hours)"),
                         'url' => $url,
                     ];
                 }
@@ -470,7 +470,7 @@ class Service
         if (!extension_loaded('openssl')) {
             $messages[] = $this->createAdminAlert(
                 'warning',
-                __trans('FOSSBilling requires :extension extension to be enabled on this server for security reasons.', [':extension' => 'php openssl'])
+                __trans('The billing platform requires the :extension extension to be enabled on this server for security reasons.', [':extension' => 'php openssl'])
             );
         }
 

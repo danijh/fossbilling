@@ -198,7 +198,7 @@ class Service implements InjectionAwareInterface
                 FROM client_order o
                 RIGHT JOIN product p ON(p.id = o.product_id)
                 WHERE o.status = 'active'
-                GROUP BY o.product_id
+                GROUP BY p.id, p.title
                 ORDER BY orders DESC
                 ";
 

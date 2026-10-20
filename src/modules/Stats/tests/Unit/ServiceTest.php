@@ -132,8 +132,9 @@ test('gets product summary', function (): void {
     $dbalMock = Mockery::mock(Doctrine\DBAL\Connection::class);
     $dbalMock->shouldReceive('getDatabasePlatform')->andReturn(Mockery::mock(MySQLPlatform::class));
     /** @var Mockery\Expectation $expectation2 */
-    $expectation2 = $dbalMock->shouldReceive('executeQuery');
-    $expectation2->atLeast()->once();
+    $expectation2 = $dbalMock->shouldReceive('executeQuery')
+        ->once()
+        ->with(Mockery::on(fn (string $query): bool => str_contains($query, 'GROUP BY p.id, p.title')));
     $expectation2->andReturn($resultMock);
 
     $di = container();

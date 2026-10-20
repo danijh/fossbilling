@@ -53,6 +53,7 @@ test('get search query', function (array $filterKey, string $search, bool $expec
     $result = $service->getSearchQuery($filterKey);
     expect($result[0])->toBeString();
     expect($result[1])->toBeArray();
+    expect($result[0])->toContain("CONCAT_WS(' ', c.first_name, c.last_name)");
     expect(str_contains((string) $result[0], $search))->toEqual($expected);
 })->with('searchFilters');
 

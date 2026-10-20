@@ -63,7 +63,10 @@ test('counter returns status counts', function (): void {
 
     $counter = [Order::STATUS_ACTIVE => 1];
     $connectionMock = Mockery::mock(Doctrine\DBAL\Connection::class);
-    $connectionMock->shouldReceive('fetchAllKeyValue')->atLeast()->once()->andReturn($counter);
+    $connectionMock->shouldReceive('fetchAllKeyValue')
+        ->once()
+        ->with(Mockery::on(fn (string $sql): bool => str_contains($sql, 'WHERE group_master IS TRUE')))
+        ->andReturn($counter);
     $emMock = Mockery::mock(Doctrine\ORM\EntityManagerInterface::class);
     $emMock->shouldReceive('getConnection')->atLeast()->once()->andReturn($connectionMock);
 
@@ -1649,7 +1652,7 @@ dataset('searchQueryData', fn (): array => [
     ],
     'hide_addons' => [
         ['hide_addons' => true],
-        'co.group_master = 1',
+        'co.group_master IS TRUE',
         [],
     ],
     'created_at' => [

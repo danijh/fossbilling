@@ -192,7 +192,7 @@ class Service implements InjectionAwareInterface
         $sql = '
         SELECT status, COUNT(id) as counter
         FROM client_order
-        WHERE group_master = 1
+        WHERE group_master IS TRUE
         GROUP BY status
         ';
 
@@ -772,7 +772,7 @@ class Service implements InjectionAwareInterface
         }
 
         if ($hide_addons) {
-            $where[] = 'co.group_master = 1';
+            $where[] = 'co.group_master IS TRUE';
         }
 
         if ($created_at) {

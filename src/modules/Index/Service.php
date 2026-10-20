@@ -142,7 +142,7 @@ class Service implements InjectionAwareInterface
         $sql = 'SELECT status, COUNT(*) as total
                  FROM client_order
                  WHERE client_id = :client_id
-                 AND group_master = 1
+                 AND group_master IS TRUE
                  GROUP BY status';
 
         $results = $this->di['em']->getConnection()->fetchAllAssociative($sql, $data);
@@ -173,7 +173,7 @@ class Service implements InjectionAwareInterface
         $expiringSql = "SELECT COUNT(*) as total
                         FROM client_order
                         WHERE client_id = :client_id
-                        AND group_master = 1
+                        AND group_master IS TRUE
                         AND status = 'active'
                         AND invoice_option = 'issue-invoice'
                         AND period IS NOT NULL
@@ -198,7 +198,7 @@ class Service implements InjectionAwareInterface
         $sql = 'SELECT co.id
                  FROM client_order co
                  WHERE co.client_id = :client_id
-                 AND co.group_master = 1
+                 AND co.group_master IS TRUE
                  ORDER BY co.updated_at DESC
                  LIMIT 5';
 

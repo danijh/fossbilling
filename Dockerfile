@@ -16,12 +16,13 @@ RUN set -eux; \
     libfreetype6-dev \
     libicu-dev \
     libjpeg62-turbo-dev \
+    libpq-dev \
     libpng-dev \
     libzip-dev \
     unzip \
     zlib1g-dev; \
   docker-php-ext-configure gd --with-freetype --with-jpeg; \
-  docker-php-ext-install -j"$(nproc)" bz2 gd intl pdo_mysql zip; \
+  docker-php-ext-install -j"$(nproc)" bz2 gd intl pdo_mysql pdo_pgsql zip; \
   a2enmod rewrite; \
   apt-mark auto '.*' > /dev/null; \
   apt-mark manual \

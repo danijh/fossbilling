@@ -1,9 +1,9 @@
 # Deploy Sangatta Cloud Billing di balik Nginx Proxy Manager
 
-Panduan ini menjalankan FOSSBilling dan PostgreSQL 16 pada host Debian
+Panduan ini menjalankan FOSSBilling dan MariaDB `latest` pada host Debian
 `192.168.1.22`. Nginx Proxy Manager (NPM) berada di VM terpisah dan
-meneruskan HTTPS ke aplikasi melalui jaringan LAN. PostgreSQL hanya dapat
-diakses dari network internal Docker; jangan publikasikan port `5432`.
+meneruskan HTTPS ke aplikasi melalui jaringan LAN. MariaDB hanya dapat
+diakses dari network internal Docker; jangan publikasikan port `3306`.
 
 Hostname yang direncanakan:
 
@@ -73,9 +73,11 @@ openssl rand -hex 32
 nano .env
 ```
 
-Salin hasil `openssl rand -hex 32` ke `POSTGRES_PASSWORD` di `.env`. Pastikan
+Jalankan `openssl rand -hex 32` dua kali dan masukkan hasil yang berbeda ke
+`MARIADB_PASSWORD` dan `MARIADB_ROOT_PASSWORD` di `.env`. Pastikan
 `BILLING_BIND_IP=192.168.1.22`. Jangan kirim atau commit `.env`; file itu sudah
-diabaikan Git.
+diabaikan Git. `MARIADB_ROOT_PASSWORD` adalah password administrator database;
+aplikasi menggunakan user terbatas dari `MARIADB_USER`.
 
 ## 3. Siapkan proxy host pada NPM
 
@@ -109,18 +111,20 @@ docker compose ps
 docker compose logs -f app
 ```
 
-Compose akan membuat PostgreSQL dan volume baru khusus project ini, tanpa
-mengubah container atau volume lain di host. Ekstensi PHP `pdo_pgsql` sudah
-disertakan dalam image FOSSBilling. Tunggu sampai service `db` sehat.
+Compose akan membuat MariaDB dan volume baru khusus project ini, tanpa
+mengubah container atau volume lain di host. Volume PostgreSQL lama, jika ada,
+tidak dihapus atau dikonversi; data tidak dipindahkan otomatis ke MariaDB.
+Image FOSSBilling sudah menyertakan ekstensi PHP `pdo_mysql`. Tunggu sampai
+service `db` sehat.
 
 Selesaikan installer pada `https://billing.danijh.my.id/`. Gunakan detail DB:
 
-- Driver: PostgreSQL
+- Driver: MySQL/MariaDB
 - Host: `db`
-- Port: `5432`
-- Database: nilai `POSTGRES_DB` dari `.env`
-- Username: nilai `POSTGRES_USER` dari `.env`
-- Password: nilai `POSTGRES_PASSWORD` dari `.env`
+- Port: `3306`
+- Database: nilai `MARIADB_DATABASE` dari `.env`
+- Username: nilai `MARIADB_USER` dari `.env`
+- Password: nilai `MARIADB_PASSWORD` dari `.env`
 
 `db` adalah nama service di network Compose. Jangan menggunakan `localhost`
 untuk koneksi database dari container aplikasi.
@@ -153,12 +157,13 @@ Kemudian jalankan `docker compose up -d`. UID `33` adalah user `www-data` pada
 image aplikasi. Lindungi `.env`, `config.php`, dan backup database seperti
 rahasia.
 
-Buat backup PostgreSQL dengan permission privat:
+Buat backup MariaDB dengan permission privat:
 
 ```sh
 umask 077
 docker compose exec -T db sh -c \
-  'pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB"' > fossbilling.sql
+  'mariadb-dump --user="$MARIADB_USER" --password="$MARIADB_PASSWORD" "$MARIADB_DATABASE"' \
+  > fossbilling.sql
 test -s fossbilling.sql
 ```
 
@@ -183,11 +188,14 @@ Sebelum update, backup DB dan konfigurasi. Kemudian:
 cd /opt/sangatta-cloud
 git pull --ff-only origin sangatta-cloud-white-label
 cd deploy
+docker compose pull db
 docker compose build --pull
 docker compose up -d
 ```
 
-Hindari updater bawaan untuk memasang rilis upstream pada fork ini karena
+`mariadb:latest` mengikuti rilis terbaru. Backup database sebelum menarik
+image baru, terutama sebelum perubahan versi mayor. Hindari updater bawaan
+untuk memasang rilis upstream pada fork ini karena
 updater dapat mengganti kustomisasi white-label.
 
 ## Integrasi API antar layanan
@@ -200,5 +208,5 @@ rahasia di JavaScript/browser atau repository.
 
 Jika kelak layanan perlu berkomunikasi langsung di LAN, tambahkan aturan
 firewall hanya untuk sumber dan port API yang diperlukan. Jangan membuka
-PostgreSQL ke Nextcloud, landing page, atau seluruh LAN; integrasikan melalui
+MariaDB ke Nextcloud, landing page, atau seluruh LAN; integrasikan melalui
 API FOSSBilling, bukan dengan berbagi database.

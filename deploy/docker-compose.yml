@@ -2,16 +2,17 @@ name: sangatta-cloud-staging
 
 services:
   db:
-    image: postgres:16-alpine
+    image: mariadb:latest
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:?Set POSTGRES_DB in deploy/.env}
-      POSTGRES_USER: ${POSTGRES_USER:?Set POSTGRES_USER in deploy/.env}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in deploy/.env}
+      MARIADB_DATABASE: ${MARIADB_DATABASE:?Set MARIADB_DATABASE in deploy/.env}
+      MARIADB_USER: ${MARIADB_USER:?Set MARIADB_USER in deploy/.env}
+      MARIADB_PASSWORD: ${MARIADB_PASSWORD:?Set MARIADB_PASSWORD in deploy/.env}
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD:?Set MARIADB_ROOT_PASSWORD in deploy/.env}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - mariadb_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
       interval: 5s
       timeout: 5s
       retries: 12
@@ -31,5 +32,5 @@ services:
       - fossbilling_data:/var/www/html/data
 
 volumes:
-  postgres_data:
+  mariadb_data:
   fossbilling_data:

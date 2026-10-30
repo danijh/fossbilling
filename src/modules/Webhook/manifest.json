@@ -1,0 +1,8 @@
+{
+  "id": "webhook",
+  "type": "mod",
+  "name": "Webhook Sender",
+  "description": "Sends signed webhooks to an external endpoint (for example a realtime notification server) when support ticket events occur.",
+  "icon_url": "icon.svg",
+  "version": "1.0.0"
+}

@@ -1,28 +1,24 @@
-# Deploy Sangatta Cloud Billing di balik Nginx Proxy Manager
+# Deploy Sangatta Cloud Billing dengan Docker
 
-Panduan ini menjalankan FOSSBilling dan MariaDB `latest` pada host Debian
-`192.168.1.29`. Nginx Proxy Manager (NPM) berada di VM terpisah dan
-meneruskan HTTPS ke aplikasi melalui jaringan LAN. MariaDB hanya dapat
-diakses dari network internal Docker; jangan publikasikan port `3306`.
+Panduan berurutan untuk menjalankan FOSSBilling + MariaDB di satu server Debian
+(simulasi VPS), dari persiapan server sampai pembaruan yang aman dari GitHub.
 
-Hostname yang direncanakan:
+Prinsip utama:
 
-- Landing page: `danijh.my.id`
-- Nextcloud: `cloud.danijh.my.id`
-- FOSSBilling: `billing.danijh.my.id`
+- **Kode** ada di image Docker dan berasal dari GitHub. Aman diganti kapan saja.
+- **Data** ada di volume Docker (`mariadb_data`, `fossbilling_data`) dan
+  **tidak pernah disentuh** oleh `git pull` maupun `docker compose build/up`.
+- **Konfigurasi** (`.env`, `config.php`) ada di host, diabaikan Git, dan
+  dipasang ke container. Tanpa `config.php` yang di-mount, FOSSBilling
+  menganggap belum terpasang dan membuka installer.
 
-Sesuaikan hostname dengan yang tersedia dan pastikan sertifikat NPM mencakup
-setiap nama yang dipakai. Sertifikat untuk `danijh.my.id` saja tidak otomatis
-berlaku bagi subdomain. Gunakan sertifikat wildcard/SAN atau sertifikat terpisah.
+Contoh di bawah memakai `192.168.1.29` sebagai IP server. Ganti sesuai server
+Anda.
 
-## 1. Siapkan host aplikasi
+## 1. Persiapan server
 
-Tetapkan alamat LAN `192.168.1.29` melalui reservasi DHCP atau konfigurasi IP
-statis. Batasi firewall port TCP `8086` agar hanya VM NPM yang dapat
-mengaksesnya. Port `80`/`443` publik masuk ke NPM; database tidak dibuka.
-
-Pasang Docker Engine dan Compose plugin dari repository resmi Docker untuk
-Debian:
+Gunakan Debian dengan akun non-root yang punya `sudo`. Pasang Docker Engine dan
+Compose plugin:
 
 ```sh
 sudo apt-get update
@@ -42,7 +38,14 @@ sudo systemctl enable --now docker
 sudo docker run hello-world
 ```
 
-Clone branch white-label:
+Jalankan perintah Docker dengan `sudo` bila akun belum punya akses Docker.
+Keanggotaan grup `docker` setara dengan hak root.
+
+Jika server dapat diakses dari jaringan lain, batasi firewall hanya ke port
+yang dibutuhkan (SSH, dan `80`/`443` bila memakai reverse proxy). Jangan
+membuka `3306`.
+
+## 2. Ambil source dari GitHub
 
 ```sh
 sudo git clone --branch sangatta-cloud-billing-mdb --single-branch \
@@ -51,58 +54,30 @@ sudo chown -R "$USER":"$(id -gn)" /opt/sangatta-cloud
 cd /opt/sangatta-cloud/deploy
 ```
 
-Jika source sudah di-clone:
-
-```sh
-cd /opt/sangatta-cloud
-git fetch origin
-git switch sangatta-cloud-billing-mdb
-git pull --ff-only origin sangatta-cloud-billing-mdb
-cd deploy
-```
-
-Jalankan perintah Docker dengan `sudo` bila akun belum memiliki akses Docker.
-Keanggotaan grup `docker` setara dengan hak root.
-
-## 2. Siapkan password database
+## 3. Siapkan `.env`
 
 ```sh
 cp .env.example .env
 chmod 600 .env
-openssl rand -hex 32
+openssl rand -hex 32     # jalankan dua kali, satu hasil untuk tiap password
 nano .env
 ```
 
-Jalankan `openssl rand -hex 32` dua kali dan masukkan hasil yang berbeda ke
-`MARIADB_PASSWORD` dan `MARIADB_ROOT_PASSWORD` di `.env`. Pastikan
-`BILLING_BIND_IP=192.168.1.29`. Jangan kirim atau commit `.env`; file itu sudah
-diabaikan Git. `MARIADB_ROOT_PASSWORD` adalah password administrator database;
-aplikasi menggunakan user terbatas dari `MARIADB_USER`.
+Isi:
 
-## 3. Siapkan proxy host pada NPM
+| Variabel | Keterangan |
+|---|---|
+| `BILLING_BIND_IP` | `127.0.0.1` bila hanya diakses dari server itu sendiri atau lewat reverse proxy di server yang sama. `192.168.1.29` (IP LAN) bila ingin diakses langsung dari perangkat lain. |
+| `MARIADB_DATABASE`, `MARIADB_USER` | Nama database dan user aplikasi. |
+| `MARIADB_PASSWORD`, `MARIADB_ROOT_PASSWORD` | Dua password acak yang berbeda. |
 
-NPM berada di VM berbeda, jadi **jangan mencoba memakai Docker network
-bersama** antar-VM. NPM akan mengakses port LAN yang dipublikasikan Compose.
+`.env` sudah diabaikan Git. Jangan dikirim atau di-commit. Aplikasi memakai user
+terbatas dari `MARIADB_USER`; root hanya untuk administrasi.
 
-Di AdGuard DNS, buat rewrite `billing.danijh.my.id` ke alamat LAN VM NPM (bukan
-ke `192.168.1.29`). Ulangi untuk hostname Nextcloud dan landing page sesuai
-alamat NPM. Jika domain juga harus dapat diakses dari internet, atur DNS publik
-ke IP publik NPM dan teruskan port `80` serta `443` di router ke VM NPM.
+> `.env` baru dibaca saat container dibuat. Jika Anda mengubahnya, jalankan
+> `docker compose up -d` lagi.
 
-Di NPM, buat Proxy Host:
-
-- Domain Names: `billing.danijh.my.id`
-- Scheme: `http`
-- Forward Hostname / IP: `192.168.1.29`
-- Forward Port: `8086`
-- SSL: pilih sertifikat yang mencakup `billing.danijh.my.id`, lalu aktifkan
-  Force SSL
-
-Untuk nama internal yang tidak dapat diverifikasi melalui HTTP publik, NPM
-dapat memakai sertifikat DNS challenge jika provider DNS didukung. Periksa
-bahwa sertifikat benar-benar mencakup hostname, bukan hanya domain akar.
-
-## 4. Build dan jalankan FOSSBilling
+## 4. Build dan jalankan
 
 ```sh
 docker compose build
@@ -111,126 +86,210 @@ docker compose ps
 docker compose logs -f app
 ```
 
-Compose akan membuat MariaDB dan volume baru khusus project ini, tanpa
-mengubah container atau volume lain di host. Volume PostgreSQL lama, jika ada,
-tidak dihapus atau dikonversi; data tidak dipindahkan otomatis ke MariaDB.
-Image FOSSBilling sudah menyertakan ekstensi PHP `pdo_mysql`. Tunggu sampai
-service `db` sehat.
+Port aplikasi: `${BILLING_BIND_IP}:8086`. MariaDB hanya dapat dicapai dari
+network internal Docker. Tunggu sampai service `db` berstatus sehat.
+Peringatan Apache `AH00558` tentang `ServerName` tidak berbahaya.
 
-Selesaikan installer pada `https://billing.danijh.my.id/`. Gunakan detail DB:
+## 5. Install pertama kali
+
+Buka alamat yang benar-benar akan dipakai, misalnya `http://192.168.1.29:8086/`
+(atau domain HTTPS jika sudah ada). **Alamat ini disimpan sebagai `url`** di
+konfigurasi, jadi jangan mencampur `localhost`, IP, dan domain.
+
+Detail database di installer:
 
 - Driver: MySQL/MariaDB
-- Host: `db`
+- Host: `db` (nama service Compose, bukan `localhost`)
 - Port: `3306`
-- Database: nilai `MARIADB_DATABASE` dari `.env`
-- Username: nilai `MARIADB_USER` dari `.env`
-- Password: nilai `MARIADB_PASSWORD` dari `.env`
+- Database / Username / Password: nilai dari `.env`
 
-`db` adalah nama service di network Compose. Jangan menggunakan `localhost`
-untuk koneksi database dari container aplikasi.
+Jika memakai reverse proxy, isi proxy tepercaya dengan alamat proxy yang tepat
+(misalnya `127.0.0.1` untuk nginx di server yang sama) dan batasi akses ke port
+`8086` agar klien lain tidak bisa menyamar sebagai proxy.
 
-Pakai URL HTTPS final di installer. NPM meneruskan request ke container dengan
-HTTP dan mengirim header proxy. Installer dapat mendeteksi proxy dari request;
-periksa bahwa proxy tepercaya yang disimpan adalah alamat VM NPM yang tepat.
-Biarkan hanya VM NPM yang dapat mencapai `192.168.1.29:8086`, sehingga klien
-lain tidak dapat menyamar sebagai proxy.
+## 6. Simpan `config.php` di host (wajib, jangan dilewati)
 
-## 5. Persistenkan konfigurasi dan backup
-
-Setelah installer membuat konfigurasi, simpan `config.php` di host sebelum
-container aplikasi dibuat ulang:
+Installer menulis `config.php` **di dalam container**. Jika dibiarkan di sana,
+file itu hilang saat container dibuat ulang dan installer muncul lagi. Salin ke
+host dan pasang sebagai mount:
 
 ```sh
+cd /opt/sangatta-cloud/deploy
 docker compose cp app:/var/www/html/config.php ./config.php
-sudo chown root:33 ./config.php
+sudo chown root:33 ./config.php     # UID 33 = www-data di image
 sudo chmod 660 ./config.php
+test -s ./config.php && echo OK
 ```
 
-Tambahkan mount berikut di `volumes` service `app` dalam
-`docker-compose.yml`:
+Buat `docker-compose.override.yml` (otomatis dibaca Compose, diabaikan Git
+sehingga `git pull` tidak pernah berbenturan dengannya):
 
 ```yaml
+services:
+  app:
+    volumes:
       - ./config.php:/var/www/html/config.php
 ```
 
-Kemudian jalankan `docker compose up -d`. UID `33` adalah user `www-data` pada
-image aplikasi. Lindungi `.env`, `config.php`, dan backup database seperti
-rahasia.
+```sh
+docker compose up -d
+docker compose exec app ls -la /var/www/html/config.php
+```
 
-Buat backup MariaDB dengan permission privat:
+Urutannya penting: **buat file `config.php` di host lebih dulu**, baru pasang
+mount. Jika file belum ada, Docker membuat *folder* bernama `config.php` dan
+aplikasi gagal berjalan.
+
+Simpan salinan `config.php` dan `.env` di luar server. Keduanya berisi rahasia
+(termasuk `salt`); jangan di-commit.
+
+## 7. Backup
+
+Lakukan sebelum setiap update, dan jadwalkan rutin:
 
 ```sh
+cd /opt/sangatta-cloud/deploy
 umask 077
+mkdir -p ~/backup
 docker compose exec -T db sh -c \
-  'mariadb-dump --user="$MARIADB_USER" --password="$MARIADB_PASSWORD" "$MARIADB_DATABASE"' \
-  > fossbilling.sql
-test -s fossbilling.sql
+  'mariadb-dump --user=root --password="$MARIADB_ROOT_PASSWORD" --single-transaction "$MARIADB_DATABASE"' \
+  > ~/backup/fossbilling-$(date +%F-%H%M).sql
+test -s ~/backup/fossbilling-*.sql && ls -la ~/backup
+cp config.php .env ~/backup/
 ```
 
-Backup file tersebut ke media terpisah dari VM. Named volume bukan pengganti
-backup.
+Salin folder backup ke media lain. Named volume bukan pengganti backup.
 
-## 6. Hardening PHP dan menambahkan Imagick
-
-Image aplikasi menyertakan ekstensi PHP Imagick. Daftar fungsi PHP yang
-dinonaktifkan dipasang ke Apache dan PHP CLI (termasuk cron) melalui file INI
-read-only di `deploy/php/fossbilling-security.ini`.
-
-Setelah perubahan tersedia di server, jalankan dari direktori `deploy` untuk
-membangun ulang image aplikasi dan menerapkan konfigurasi:
+Pulihkan database (hanya bila perlu):
 
 ```sh
-docker compose build --pull app
-docker compose up -d --force-recreate app
-docker compose exec app php -r 'var_export(["disable_functions" => ini_get("disable_functions"), "imagick" => extension_loaded("imagick")]); echo PHP_EOL;'
+docker compose exec -T db sh -c \
+  'mariadb --user=root --password="$MARIADB_ROOT_PASSWORD" "$MARIADB_DATABASE"' \
+  < ~/backup/fossbilling-TANGGAL.sql
 ```
 
-Pastikan hasil menampilkan keenam fungsi pada `disable_functions` dan `imagick`
-bernilai `true`. Jika `proc_open` dinonaktifkan, transport email Sendmail yang
-membutuhkan fungsi itu tidak akan berjalan; gunakan SMTP di konfigurasi email
-FOSSBilling. Jangan menghapus `proc_open` dari daftar kecuali memang memilih
-untuk mengaktifkan kembali fungsi tersebut.
+## 8. Update dari GitHub tanpa menimpa data
 
-`disable_functions` adalah hardening tambahan PHP, bukan pengganti pembaruan
-image, pembatasan akses jaringan, dan perlindungan host/container.
-
-## 7. Operasi dan pembaruan
+Dari mesin pengembang, commit dan push dulu ke `sangatta-cloud-billing-mdb`.
+Lalu di server:
 
 ```sh
-docker compose logs -f app
-docker compose logs -f db
-docker compose restart app
-docker compose down
-```
+cd /opt/sangatta-cloud/deploy
 
-`docker compose down` mempertahankan volume. Jangan memakai `docker compose
-down -v` kecuali memang ingin menghapus database dan data upload.
+# 1. Backup (bagian 7)
 
-Sebelum update, backup DB dan konfigurasi. Kemudian:
-
-```sh
+# 2. Tarik kode. --ff-only menolak jika ada perubahan lokal yang berbenturan.
 cd /opt/sangatta-cloud
 git pull --ff-only origin sangatta-cloud-billing-mdb
 cd deploy
-docker compose pull db
-docker compose build --pull
-docker compose up -d
+
+# 3. Build image baru dan ganti container aplikasi saja
+docker compose build app
+docker compose up -d app
+
+# 4. Periksa
+docker compose ps
+docker compose logs --tail=50 app
 ```
 
-`mariadb:latest` mengikuti rilis terbaru. Backup database sebelum menarik
-image baru, terutama sebelum perubahan versi mayor. Hindari updater bawaan
-untuk memasang rilis upstream pada fork ini karena
-updater dapat mengganti kustomisasi white-label.
+Yang aman dan tidak berubah: volume `mariadb_data` dan `fossbilling_data`,
+`.env`, `config.php`, dan `docker-compose.override.yml` (semuanya di luar Git
+atau di volume). Container `db` tidak dibuat ulang.
 
-## Integrasi API antar layanan
+Setelah update, buka area admin. Jika versi baru membawa perubahan struktur
+database, FOSSBilling menampilkan layar pasca-update untuk menerapkannya.
+Jalankan layar itu, dan jangan membuka installer.
+
+Tanda-tanda ada yang salah:
+
+- **Installer muncul:** mount `config.php` belum terpasang. Cek
+  `docker compose exec app ls -la /var/www/html/config.php`. **Jangan**
+  menyelesaikan installer sebelum penyebabnya jelas.
+- **Error koneksi database:** cek kredensial di `config.php` dan `.env`.
+
+Perintah yang **menghapus data** dan jangan dipakai pada instalasi berjalan:
+
+```sh
+docker compose down -v     # menghapus volume database dan upload
+docker volume rm ...
+```
+
+`docker compose down` (tanpa `-v`) aman karena volume dipertahankan.
+
+Opsional untuk pembaruan image dasar: `docker compose build --pull app`.
+Perbarui MariaDB hanya dengan sengaja (`docker compose pull db && docker
+compose up -d db`), setelah backup, dan hindari lompatan versi mayor tanpa
+membaca catatan rilisnya. Jangan memakai updater bawaan FOSSBilling pada fork
+ini, karena dapat menimpa kustomisasi white-label.
+
+## 9. Reverse proxy dan domain (opsional, menyusul)
+
+Sistem berjalan penuh dengan IP lokal. Tambahkan domain/HTTPS kapan saja tanpa
+install ulang, lalu ubah `'url'` di `config.php` ke alamat baru dan jalankan
+`docker compose restart app`.
+
+**nginx di server yang sama** (arahkan `BILLING_BIND_IP=127.0.0.1`):
+
+```nginx
+server {
+    listen 80;
+    server_name billing.example.com;
+
+    location / {
+        proxy_pass http://127.0.0.1:8086;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        client_max_body_size 64m;
+    }
+}
+```
+
+Lalu `sudo nginx -t && sudo systemctl reload nginx`, dan pasang HTTPS
+(misalnya `certbot --nginx`). Tanpa server block khusus, nginx menjawab
+permintaan domain yang tidak dikenal dengan server block default, yang bisa
+saja layanan lain di server yang sama.
+
+**Nginx Proxy Manager di VM lain:** buat Proxy Host ke `http://<IP server>:8086`
+(`BILLING_BIND_IP` harus IP LAN, bukan `127.0.0.1`), aktifkan Force SSL dengan
+sertifikat yang mencakup hostnya, dan batasi firewall port `8086` hanya untuk
+IP VM NPM. Jika NPM berupa container di server yang sama, `127.0.0.1` di dalam
+container menunjuk ke container itu sendiri, jadi gunakan IP LAN server.
+
+## 10. Hardening PHP dan Imagick
+
+Image menyertakan ekstensi Imagick. Fungsi PHP berisiko dinonaktifkan untuk
+Apache dan PHP CLI (termasuk cron) lewat file read-only
+`deploy/php/fossbilling-security.ini`. Verifikasi setelah build:
+
+```sh
+docker compose exec app php -r 'var_export(["disable_functions" => ini_get("disable_functions"), "imagick" => extension_loaded("imagick")]); echo PHP_EOL;'
+```
+
+`disable_functions` harus memuat `exec,passthru,system,shell_exec,popen,proc_open`
+dan `imagick` bernilai `true`. Karena `proc_open` dinonaktifkan, transport email
+Sendmail tidak berjalan; gunakan SMTP. Ini hardening tambahan, bukan pengganti
+pembaruan image dan pembatasan akses jaringan.
+
+## 11. Modul Webhook Sender
+
+Modul `Webhook` mengirim POST JSON bertanda tangan HMAC saat admin membalas
+tiket (`onAfterAdminReplyTicket`). Aktifkan di Admin → Extensions, lalu tambahkan
+di `config.php` (yang sudah di-mount di host):
+
+```php
+'webhook' => ['url' => 'https://penerima.example.com/hook', 'secret' => '...'],
+```
+
+Jalankan `docker compose restart app`. Penerima memverifikasi header
+`X-FOSSBilling-Signature: sha256=<HMAC-SHA256 dari body>`.
+
+## 12. Integrasi dengan layanan lain
 
 Jalankan Nextcloud, landing page, dan FOSSBilling sebagai stack terpisah.
-Gunakan API resmi masing-masing layanan melalui HTTPS dan autentikasi yang
-berbeda untuk setiap integrasi. Simpan token di konfigurasi server, beri scope
-minimum yang dibutuhkan, lakukan rotasi bila bocor, dan jangan menaruh token
-rahasia di JavaScript/browser atau repository.
-
-Jika kelak layanan perlu berkomunikasi langsung di LAN, tambahkan aturan
-firewall hanya untuk sumber dan port API yang diperlukan. Jangan membuka
-MariaDB ke Nextcloud, landing page, atau seluruh LAN; integrasikan melalui
-API FOSSBilling, bukan dengan berbagi database.
+Integrasikan lewat API resmi masing-masing dengan HTTPS dan token berbeda untuk
+setiap integrasi. Simpan token di konfigurasi server, beri scope minimum,
+rotasi bila bocor, dan jangan menaruhnya di JavaScript browser atau repository.
+Jangan membuka MariaDB ke layanan lain; integrasikan melalui API FOSSBilling,
+bukan dengan berbagi database.

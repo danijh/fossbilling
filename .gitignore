@@ -7,6 +7,7 @@
 /src/config.old.php
 /deploy/.env
 /deploy/config.php
+/deploy/docker-compose.override.yml
 /src/data/*
 !/src/data/.htaccess
 !/src/data/index.html

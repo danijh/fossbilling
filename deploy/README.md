@@ -1,7 +1,7 @@
 # Deploy Sangatta Cloud Billing di balik Nginx Proxy Manager
 
 Panduan ini menjalankan FOSSBilling dan MariaDB `latest` pada host Debian
-`192.168.1.22`. Nginx Proxy Manager (NPM) berada di VM terpisah dan
+`192.168.1.29`. Nginx Proxy Manager (NPM) berada di VM terpisah dan
 meneruskan HTTPS ke aplikasi melalui jaringan LAN. MariaDB hanya dapat
 diakses dari network internal Docker; jangan publikasikan port `3306`.
 
@@ -17,8 +17,8 @@ berlaku bagi subdomain. Gunakan sertifikat wildcard/SAN atau sertifikat terpisah
 
 ## 1. Siapkan host aplikasi
 
-Tetapkan alamat LAN `192.168.1.22` melalui reservasi DHCP atau konfigurasi IP
-statis. Batasi firewall port TCP `8085` agar hanya VM NPM yang dapat
+Tetapkan alamat LAN `192.168.1.29` melalui reservasi DHCP atau konfigurasi IP
+statis. Batasi firewall port TCP `8086` agar hanya VM NPM yang dapat
 mengaksesnya. Port `80`/`443` publik masuk ke NPM; database tidak dibuka.
 
 Pasang Docker Engine dan Compose plugin dari repository resmi Docker untuk
@@ -75,7 +75,7 @@ nano .env
 
 Jalankan `openssl rand -hex 32` dua kali dan masukkan hasil yang berbeda ke
 `MARIADB_PASSWORD` dan `MARIADB_ROOT_PASSWORD` di `.env`. Pastikan
-`BILLING_BIND_IP=192.168.1.22`. Jangan kirim atau commit `.env`; file itu sudah
+`BILLING_BIND_IP=192.168.1.29`. Jangan kirim atau commit `.env`; file itu sudah
 diabaikan Git. `MARIADB_ROOT_PASSWORD` adalah password administrator database;
 aplikasi menggunakan user terbatas dari `MARIADB_USER`.
 
@@ -85,7 +85,7 @@ NPM berada di VM berbeda, jadi **jangan mencoba memakai Docker network
 bersama** antar-VM. NPM akan mengakses port LAN yang dipublikasikan Compose.
 
 Di AdGuard DNS, buat rewrite `billing.danijh.my.id` ke alamat LAN VM NPM (bukan
-ke `192.168.1.22`). Ulangi untuk hostname Nextcloud dan landing page sesuai
+ke `192.168.1.29`). Ulangi untuk hostname Nextcloud dan landing page sesuai
 alamat NPM. Jika domain juga harus dapat diakses dari internet, atur DNS publik
 ke IP publik NPM dan teruskan port `80` serta `443` di router ke VM NPM.
 
@@ -93,8 +93,8 @@ Di NPM, buat Proxy Host:
 
 - Domain Names: `billing.danijh.my.id`
 - Scheme: `http`
-- Forward Hostname / IP: `192.168.1.22`
-- Forward Port: `8085`
+- Forward Hostname / IP: `192.168.1.29`
+- Forward Port: `8086`
 - SSL: pilih sertifikat yang mencakup `billing.danijh.my.id`, lalu aktifkan
   Force SSL
 
@@ -132,7 +132,7 @@ untuk koneksi database dari container aplikasi.
 Pakai URL HTTPS final di installer. NPM meneruskan request ke container dengan
 HTTP dan mengirim header proxy. Installer dapat mendeteksi proxy dari request;
 periksa bahwa proxy tepercaya yang disimpan adalah alamat VM NPM yang tepat.
-Biarkan hanya VM NPM yang dapat mencapai `192.168.1.22:8085`, sehingga klien
+Biarkan hanya VM NPM yang dapat mencapai `192.168.1.29:8086`, sehingga klien
 lain tidak dapat menyamar sebagai proxy.
 
 ## 5. Persistenkan konfigurasi dan backup

@@ -45,7 +45,7 @@ sudo docker run hello-world
 Clone branch white-label:
 
 ```sh
-sudo git clone --branch sangatta-cloud-white-label --single-branch \
+sudo git clone --branch sangatta-cloud-billing-mdb --single-branch \
   https://github.com/danijh/fossbilling.git /opt/sangatta-cloud
 sudo chown -R "$USER":"$(id -gn)" /opt/sangatta-cloud
 cd /opt/sangatta-cloud/deploy
@@ -56,8 +56,8 @@ Jika source sudah di-clone:
 ```sh
 cd /opt/sangatta-cloud
 git fetch origin
-git switch sangatta-cloud-white-label
-git pull --ff-only origin sangatta-cloud-white-label
+git switch sangatta-cloud-billing-mdb
+git pull --ff-only origin sangatta-cloud-billing-mdb
 cd deploy
 ```
 
@@ -170,7 +170,31 @@ test -s fossbilling.sql
 Backup file tersebut ke media terpisah dari VM. Named volume bukan pengganti
 backup.
 
-## 6. Operasi dan pembaruan
+## 6. Hardening PHP dan menambahkan Imagick
+
+Image aplikasi menyertakan ekstensi PHP Imagick. Daftar fungsi PHP yang
+dinonaktifkan dipasang ke Apache dan PHP CLI (termasuk cron) melalui file INI
+read-only di `deploy/php/fossbilling-security.ini`.
+
+Setelah perubahan tersedia di server, jalankan dari direktori `deploy` untuk
+membangun ulang image aplikasi dan menerapkan konfigurasi:
+
+```sh
+docker compose build --pull app
+docker compose up -d --force-recreate app
+docker compose exec app php -r 'var_export(["disable_functions" => ini_get("disable_functions"), "imagick" => extension_loaded("imagick")]); echo PHP_EOL;'
+```
+
+Pastikan hasil menampilkan keenam fungsi pada `disable_functions` dan `imagick`
+bernilai `true`. Jika `proc_open` dinonaktifkan, transport email Sendmail yang
+membutuhkan fungsi itu tidak akan berjalan; gunakan SMTP di konfigurasi email
+FOSSBilling. Jangan menghapus `proc_open` dari daftar kecuali memang memilih
+untuk mengaktifkan kembali fungsi tersebut.
+
+`disable_functions` adalah hardening tambahan PHP, bukan pengganti pembaruan
+image, pembatasan akses jaringan, dan perlindungan host/container.
+
+## 7. Operasi dan pembaruan
 
 ```sh
 docker compose logs -f app
@@ -186,7 +210,7 @@ Sebelum update, backup DB dan konfigurasi. Kemudian:
 
 ```sh
 cd /opt/sangatta-cloud
-git pull --ff-only origin sangatta-cloud-white-label
+git pull --ff-only origin sangatta-cloud-billing-mdb
 cd deploy
 docker compose pull db
 docker compose build --pull

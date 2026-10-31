@@ -21,6 +21,9 @@ $di = include Path::join(PATH_ROOT, 'di.php');
 
 $di['translate']();
 
+// Building the logger starts the session, which must happen before any output is sent.
+$di['logger'];
+
 $success = false;
 
 try {

@@ -275,7 +275,7 @@ pembaruan image dan pembatasan akses jaringan.
 ## 11. Modul Webhook Sender
 
 Modul `Webhook` mengirim POST JSON bertanda tangan HMAC saat admin membalas
-tiket (`onAfterAdminReplyTicket`). Aktifkan di Admin → Extensions, lalu tambahkan
+tiket (`onAfterAdminReplyTicket`) atau menutup tiket (`onAfterAdminCloseTicket`). Aktifkan di Admin → Extensions, lalu tambahkan
 di `config.php` (yang sudah di-mount di host):
 
 ```php

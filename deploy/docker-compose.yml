@@ -26,8 +26,20 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    environment:
+      NEXTCLOUD_URL: ${NEXTCLOUD_URL:-}
+      NEXTCLOUD_USER: ${NEXTCLOUD_USER:-}
+      NEXTCLOUD_APP_PASSWORD: ${NEXTCLOUD_APP_PASSWORD:-}
+      NEXTCLOUD_GROUP: ${NEXTCLOUD_GROUP:-}
+      NEXTCLOUD_QUOTA: ${NEXTCLOUD_QUOTA:-}
+      NEXTCLOUD_VERIFY_TLS: ${NEXTCLOUD_VERIFY_TLS:-1}
+      NEXTCLOUD_OIDC_CLIENT_ID: ${NEXTCLOUD_OIDC_CLIENT_ID:-nextcloud}
+      NEXTCLOUD_OIDC_CLIENT_SECRET: ${NEXTCLOUD_OIDC_CLIENT_SECRET:-}
+      NEXTCLOUD_OIDC_PROVIDER_ID: ${NEXTCLOUD_OIDC_PROVIDER_ID:-1}
+      NEXTCLOUD_PORTAL_LOGIN_URL: ${NEXTCLOUD_PORTAL_LOGIN_URL:-}
     ports:
       - "${BILLING_BIND_IP:-127.0.0.1}:8086:80"
+    extra_hosts: ["nextcloud.local:host-gateway"]
     volumes:
       - fossbilling_data:/var/www/html/data
       - ./php/fossbilling-security.ini:/usr/local/etc/php/conf.d/zz-fossbilling-security.ini:ro

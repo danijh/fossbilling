@@ -1,0 +1,7 @@
+{
+  "id": "nextcloud",
+  "type": "mod",
+  "name": "Nextcloud",
+  "description": "Creates a Nextcloud account whenever a new client is created.",
+  "version": "1.0.0"
+}

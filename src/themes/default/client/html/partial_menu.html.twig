@@ -82,6 +82,15 @@
                 </li>
             {% endif %}
 
+            {% if client and guest.extension_is_on({"mod":"nextcloud"}) %}
+                <li class="nav-item offcanvas-item">
+                    <a class="nav-link d-flex align-items-center gap-2" href="{{ 'nextcloud/open'|url }}" target="_blank" rel="noopener">
+                        <svg class="icon"><use href="#cloud" /></svg>
+                        {{ 'Storage Area'|trans }}
+                    </a>
+                </li>
+            {% endif %}
+
             {% if settings.sidebar_balance_enabled and client %}
                 <li class="pt-3 ps-3">
                     <h5 class="text-secondary d-block pb-1">{{ 'Account Balance'|trans }}</h5>

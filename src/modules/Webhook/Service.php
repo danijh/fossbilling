@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace Box\Mod\Webhook;
 
+use Box\Mod\Support\Event\AfterTicketClosedEvent;
 use Box\Mod\Support\Event\AfterTicketRepliedEvent;
 use Box\Mod\Support\Event\TicketActorRole;
 use FOSSBilling\Config;
@@ -40,6 +41,21 @@ class Service implements InjectionAwareInterface
             return;
         }
 
+        $this->sendTicketWebhook('onAfterAdminReplyTicket', $event->ticketId);
+    }
+
+    #[AsEventListener]
+    public function onAfterAdminCloseTicket(AfterTicketClosedEvent $event): void
+    {
+        if ($event->actor !== TicketActorRole::ADMIN) {
+            return;
+        }
+
+        $this->sendTicketWebhook('onAfterAdminCloseTicket', $event->ticketId);
+    }
+
+    private function sendTicketWebhook(string $eventName, int $ticketId): void
+    {
         $di = $this->di ?? throw new \LogicException('The Webhook service dependency injection container has not been set.');
 
         $config = Config::getProperty('webhook', []);
@@ -50,7 +66,7 @@ class Service implements InjectionAwareInterface
         }
 
         try {
-            $ticket = $di['mod_service']('support')->getTicketById($event->ticketId);
+            $ticket = $di['mod_service']('support')->getTicketById($ticketId);
 
             // Guest tickets have no dashboard to notify.
             if ($ticket->isGuestTicket()) {
@@ -58,7 +74,7 @@ class Service implements InjectionAwareInterface
             }
 
             $body = json_encode([
-                'event' => 'onAfterAdminReplyTicket',
+                'event' => $eventName,
                 'timestamp' => time(),
                 'data' => [
                     'ticket_id' => $ticket->getId(),
@@ -79,7 +95,7 @@ class Service implements InjectionAwareInterface
                 'timeout' => 5,
             ])->getStatusCode();
         } catch (\Throwable $exc) {
-            $di['logger']->error('Failed to send support ticket reply webhook', ['exception' => $exc]);
+            $di['logger']->error('Failed to send support ticket webhook', ['event' => $eventName, 'exception' => $exc]);
         }
     }
 }

@@ -19,6 +19,14 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
     private const LIVE_PAY_URL = 'https://pay.komerce.id/';
     private const MIN_AMOUNT = 10000;
 
+    /**
+     * Minimum merchant_receives / invoice total accepted for QRIS. The customer pays
+     * invoice + fee, but Komerce deducts its percentage from the gross amount, so the
+     * merchant receives slightly less than the invoice. Virtual Account fees are flat
+     * and must be covered exactly.
+     */
+    private const QRIS_MIN_RECEIVED_RATIO = 0.995;
+
     protected ?Pimple\Container $di = null;
 
     public function __construct(private $config)
@@ -273,12 +281,14 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
         $res = $this->request('GET', '/api/v1/user/payment/status/' . rawurlencode($paymentId));
         $info = $res['data'] ?? [];
         $status = strtoupper((string) ($info['status'] ?? ''));
-        $amount = (float) ($info['amount'] ?? 0);
+        $gross = (float) ($info['amount'] ?? 0);
+        $received = is_numeric($info['merchant_receives'] ?? null) ? (float) $info['merchant_receives'] : 0.0;
+        $isQris = strtolower((string) ($info['payment_type'] ?? '')) === 'qris';
 
         $tx->setTxnId($paymentId);
         $tx->setTxnStatus($status);
         $tx->setCurrency('IDR');
-        $tx->setAmount((string) $amount);
+        $tx->setAmount((string) $received);
         $tx->setType(Payment_Transaction::TXTYPE_PAYMENT);
 
         if ($status !== 'PAID') {
@@ -299,8 +309,22 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
         }
 
         $invoiceService = $this->di['mod_service']('Invoice');
+        $expected = (float) $invoiceService->getTotalWithTax($invoice);
+        $ratio = $expected > 0 ? $received / $expected : 0.0;
+        $note = sprintf('Komerce %s: gross %s, merchant_receives %s, %.4f%% of invoice', $paymentId, $gross, $received, $ratio * 100);
+        $tx->setNote($note);
+
         try {
-            $invoiceService->validatePaymentAmount($amount, $invoiceService->getTotalWithTax($invoice));
+            if ($received <= 0) {
+                throw new FOSSBilling\Exception('Komerce did not report merchant_receives for this payment.');
+            }
+            if ($isQris) {
+                if ($ratio < self::QRIS_MIN_RECEIVED_RATIO) {
+                    throw new FOSSBilling\Exception('QRIS amount received is below the accepted tolerance. Expected :expected, merchant received :received.', [':expected' => number_format($expected, 2, '.', ''), ':received' => number_format($received, 2, '.', '')]);
+                }
+            } else {
+                $invoiceService->validatePaymentAmount($received, $expected);
+            }
         } catch (FOSSBilling\Exception $e) {
             $tx->setStatus(Transaction::STATUS_ERROR);
             $tx->setError($e->getMessage());
@@ -310,10 +334,12 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
             throw $e;
         }
 
+        // Credit exactly the invoice total: the gateway fee is already covered by the customer.
+        $credit = $expected;
         $client = $this->di['em']->getRepository(Client::class)->find($invoice->getClientId())
             ?? throw new FOSSBilling\InformationException('Client not found');
-        $this->di['mod_service']('Client')->addFunds($client, $amount, 'Komerce payment ' . $paymentId, [
-            'amount' => $amount,
+        $this->di['mod_service']('Client')->addFunds($client, $credit, 'Komerce payment ' . $paymentId, [
+            'amount' => $credit,
             'description' => 'Komerce payment ' . $paymentId,
             'type' => 'transaction',
             'rel_id' => $tx->getId(),

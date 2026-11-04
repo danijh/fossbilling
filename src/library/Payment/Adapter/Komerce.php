@@ -20,12 +20,13 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
     private const MIN_AMOUNT = 10000;
 
     /**
-     * Minimum merchant_receives / invoice total accepted for QRIS. The customer pays
-     * invoice + fee, but Komerce deducts its percentage from the gross amount, so the
-     * merchant receives slightly less than the invoice. Virtual Account fees are flat
+     * Minimum received amount / invoice total accepted for QRIS. The customer pays
+     * invoice + fee, but the gateway may deduct a percentage, so the merchant can
+     * receive slightly less than the invoice. Virtual Account fees are flat
      * and must be covered exactly.
      */
-    private const QRIS_MIN_RECEIVED_RATIO = 0.995;
+    private const QRIS_MIN_RECEIVED_RATIO = 0.999;
+    private const QRISLY_PREFIX = 'QRISLY-';
 
     protected ?Pimple\Container $di = null;
 
@@ -278,12 +279,26 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
         }
 
         // Never trust the callback body for settlement; confirm with Komerce directly.
-        $res = $this->request('GET', '/api/v1/user/payment/status/' . rawurlencode($paymentId));
-        $info = $res['data'] ?? [];
-        $status = strtoupper((string) ($info['status'] ?? ''));
-        $gross = (float) ($info['amount'] ?? 0);
-        $received = is_numeric($info['merchant_receives'] ?? null) ? (float) $info['merchant_receives'] : 0.0;
-        $isQris = strtolower((string) ($info['payment_type'] ?? '')) === 'qris';
+        if (str_starts_with($paymentId, self::QRISLY_PREFIX)) {
+            $res = $this->request('GET', '/api/v1/qrisly/payment-status/' . rawurlencode(substr($paymentId, strlen(self::QRISLY_PREFIX))));
+            $info = $res['data'] ?? [];
+            $status = match (strtolower((string) ($info['payment_status'] ?? ''))) {
+                'paid' => 'PAID',
+                'unpaid', 'pending' => 'PENDING',
+                default => strtoupper((string) ($info['payment_status'] ?? '')),
+            };
+            // QRISLY reports only the amount paid by the customer (including its unique suffix).
+            $gross = (float) ($info['amount'] ?? 0);
+            $received = $gross;
+            $isQris = true;
+        } else {
+            $res = $this->request('GET', '/api/v1/user/payment/status/' . rawurlencode($paymentId));
+            $info = $res['data'] ?? [];
+            $status = strtoupper((string) ($info['status'] ?? ''));
+            $gross = (float) ($info['amount'] ?? 0);
+            $received = is_numeric($info['merchant_receives'] ?? null) ? (float) $info['merchant_receives'] : 0.0;
+            $isQris = strtolower((string) ($info['payment_type'] ?? '')) === 'qris';
+        }
 
         $tx->setTxnId($paymentId);
         $tx->setTxnStatus($status);
@@ -311,7 +326,7 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
         $invoiceService = $this->di['mod_service']('Invoice');
         $expected = (float) $invoiceService->getTotalWithTax($invoice);
         $ratio = $expected > 0 ? $received / $expected : 0.0;
-        $note = sprintf('Komerce %s: gross %s, merchant_receives %s, %.4f%% of invoice', $paymentId, $gross, $received, $ratio * 100);
+        $note = sprintf('Komerce %s: gross %s, received %s, %.4f%% of invoice', $paymentId, $gross, $received, $ratio * 100);
         $tx->setNote($note);
 
         try {

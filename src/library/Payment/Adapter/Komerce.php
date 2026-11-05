@@ -27,6 +27,8 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
      */
     private const QRIS_MIN_RECEIVED_RATIO = 0.999;
     private const QRISLY_PREFIX = 'QRISLY-';
+    private const GOPAY_PREFIX = 'GOPAY-';
+    private const GOPAY_DEFAULT_URL = 'http://localhost:3000';
 
     protected ?Pimple\Container $di = null;
 
@@ -76,6 +78,14 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
                     'label' => 'Nomor telepon cadangan bila klien belum mengisi telepon (contoh 081234567890)',
                     'required' => false,
                 ]],
+                'gopay_url' => ['text', [
+                    'label' => 'URL gateway QRIS GoPay (contoh http://172.18.0.1:3000)',
+                    'required' => false,
+                ]],
+                'gopay_api_key' => ['password', [
+                    'label' => 'API key gateway QRIS GoPay',
+                    'required' => false,
+                ]],
                 'expiry_duration' => ['text', [
                     'label' => 'Masa berlaku pembayaran VA dalam detik (minimal 3600)',
                     'required' => false,
@@ -102,6 +112,35 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
     private function callbackKey(): string
     {
         return hash_hmac('sha256', 'komerce-callback', $this->apiKey());
+    }
+
+    private function gopayRequest(string $path, array $query = []): array
+    {
+        $base = rtrim(trim((string) ($this->config['gopay_url'] ?? '')) ?: self::GOPAY_DEFAULT_URL, '/');
+        $url = $base . $path . ($query === [] ? '' : '?' . http_build_query($query));
+        $headers = ['Accept: application/json'];
+        $key = trim((string) ($this->config['gopay_api_key'] ?? ''));
+        if ($key !== '') {
+            $headers[] = 'X-Api-Key: ' . $key;
+        }
+        $ch = curl_init($url);
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_TIMEOUT => 25,
+            CURLOPT_HTTPHEADER => $headers,
+        ]);
+        $body = curl_exec($ch);
+        $code = (int) curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        curl_close($ch);
+
+        $json = is_string($body) ? json_decode($body, true) : null;
+        if (!is_array($json) || $code < 200 || $code >= 300) {
+            $this->di['logger']->error('GoPay gateway error on ' . $path . ' HTTP ' . $code . ': ' . substr((string) $body, 0, 500));
+
+            throw new Payment_Exception('GoPay gateway request failed', [], 7031);
+        }
+
+        return $json;
     }
 
     private function request(string $method, string $path, ?array $payload = null): array
@@ -278,8 +317,19 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
             throw new FOSSBilling\InformationException('Invoice not found');
         }
 
-        // Never trust the callback body for settlement; confirm with Komerce directly.
-        if (str_starts_with($paymentId, self::QRISLY_PREFIX)) {
+        // Never trust the callback body for settlement; confirm with the gateway directly.
+        if (str_starts_with($paymentId, self::GOPAY_PREFIX)) {
+            $qrisId = substr($paymentId, strlen(self::GOPAY_PREFIX));
+            $info = $this->gopayRequest('/check-payment', ['qris_id' => $qrisId]);
+            $status = match (strtoupper((string) ($info['status'] ?? ''))) {
+                'PAID' => 'PAID',
+                'PENDING' => 'PENDING',
+                default => 'EXPIRED',
+            };
+            $gross = (float) ($info['total_amount'] ?? $info['amount'] ?? 0);
+            $received = $gross;
+            $isQris = true;
+        } elseif (str_starts_with($paymentId, self::QRISLY_PREFIX)) {
             $res = $this->request('GET', '/api/v1/qrisly/payment-status/' . rawurlencode(substr($paymentId, strlen(self::QRISLY_PREFIX))));
             $info = $res['data'] ?? [];
             $status = match (strtolower((string) ($info['payment_status'] ?? ''))) {

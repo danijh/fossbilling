@@ -1297,7 +1297,79 @@ class Service implements InjectionAwareInterface
         // Product\Service::reserveStockForOrder()), so it must not be decremented again here.
         $this->saveStatusChange($order, 'Order activated');
 
+        // Custom products are renewable entitlements, not distinct provisioned
+        // resources: a repeat purchase extends the expiry of the existing
+        // active order instead of appearing as a new service.
+        try {
+            $this->mergeDuplicateActiveOrder($order);
+        } catch (\Throwable $e) {
+            $this->di['logger']->warning('Failed to merge duplicate order #{order_id}: {message}', [
+                'order_id' => $orderId,
+                'message' => $e->getMessage(),
+            ]);
+        }
+
         return $result;
+    }
+
+    /**
+     * Extends the expiry of an existing active order for the same client and
+     * custom product by the freshly purchased duration, then marks the new
+     * order as canceled so it remains as purchase history only.
+     */
+    private function mergeDuplicateActiveOrder(Order $order): void
+    {
+        if ($order->getServiceType() !== 'custom') {
+            return;
+        }
+
+        $productId = $order->getProductId();
+        $clientId = $order->getClientId();
+        $expiresAt = $order->getExpiresAt();
+        $activatedAt = $order->getActivatedAt();
+        if ($productId === null || $clientId === null
+            || !$expiresAt instanceof \DateTime || !$activatedAt instanceof \DateTime) {
+            return;
+        }
+
+        $duration = $expiresAt->getTimestamp() - $activatedAt->getTimestamp();
+        if ($duration <= 0) {
+            return;
+        }
+
+        $orderId = $this->orderId($order);
+        $now = time();
+        $canonical = null;
+        foreach ($this->getOrderRepository()->findBy([
+            'clientId' => $clientId,
+            'productId' => $productId,
+            'status' => Order::STATUS_ACTIVE,
+        ]) as $candidate) {
+            if ($this->orderId($candidate) === $orderId) {
+                continue;
+            }
+            $candidateExpiresAt = $candidate->getExpiresAt();
+            if (!$candidateExpiresAt instanceof \DateTime || $candidateExpiresAt->getTimestamp() <= $now) {
+                continue;
+            }
+            if ($canonical === null || $candidateExpiresAt > $canonical->getExpiresAt()) {
+                $canonical = $candidate;
+            }
+        }
+
+        if (!$canonical instanceof Order) {
+            return;
+        }
+
+        $mergedExpiresAt = $canonical->getExpiresAt()->getTimestamp() + $duration;
+        $canonical->setExpiresAt(new \DateTime(date('Y-m-d H:i:s', $mergedExpiresAt)));
+        $this->persistOrder($canonical);
+
+        $order->setStatus(Order::STATUS_CANCELED);
+        $order->setCanceledAt(new \DateTime());
+        $order->setReason('Merged into order #' . $this->orderId($canonical));
+        $this->persistOrder($order);
+        $this->saveStatusChange($order, 'Order merged into #' . $this->orderId($canonical));
     }
 
     public function getOrderAddonsList(Order $order): array

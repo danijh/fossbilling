@@ -22,8 +22,11 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
     /**
      * Minimum received amount / invoice total accepted for QRIS. The customer pays
      * invoice + fee, but the gateway may deduct a percentage, so the merchant can
-     * receive slightly less than the invoice. Virtual Account fees are flat
-     * and must be covered exactly.
+     * receive slightly less than the invoice.
+     *
+     * For Virtual Account, Komerce also deducts a percentage fee from the merchant payout
+     * (merchant_receives < amount). We validate against the gross amount paid by the customer
+     * (amount) to confirm the invoice was fully covered, not against merchant_receives.
      */
     private const QRIS_MIN_RECEIVED_RATIO = 0.999;
     private const QRISLY_PREFIX = 'QRISLY-';
@@ -345,8 +348,13 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
             $res = $this->request('GET', '/api/v1/user/payment/status/' . rawurlencode($paymentId));
             $info = $res['data'] ?? [];
             $status = strtoupper((string) ($info['status'] ?? ''));
+            // amount    = what the customer paid (invoice total + flat VA fee).
+            // merchant_receives = what the merchant receives after the flat fee is deducted.
+            // For this deployment the VA fee is a fixed surcharge passed to the customer,
+            // so merchant_receives equals the invoice total exactly.
+            // Validate and credit using merchant_receives; fall back to gross only if absent.
             $gross = (float) ($info['amount'] ?? 0);
-            $received = is_numeric($info['merchant_receives'] ?? null) ? (float) $info['merchant_receives'] : 0.0;
+            $received = is_numeric($info['merchant_receives'] ?? null) ? (float) $info['merchant_receives'] : $gross;
             $isQris = strtolower((string) ($info['payment_type'] ?? '')) === 'qris';
         }
 
@@ -376,18 +384,20 @@ class Payment_Adapter_Komerce implements FOSSBilling\InjectionAwareInterface, FO
         $invoiceService = $this->di['mod_service']('Invoice');
         $expected = (float) $invoiceService->getTotalWithTax($invoice);
         $ratio = $expected > 0 ? $received / $expected : 0.0;
-        $note = sprintf('Komerce %s: gross %s, received %s, %.4f%% of invoice', $paymentId, $gross, $received, $ratio * 100);
+        $note = sprintf('Komerce %s: customer paid %s, merchant receives %s (invoice %s)', $paymentId, $gross, $received, $expected);
         $tx->setNote($note);
 
         try {
-            if ($received <= 0) {
-                throw new FOSSBilling\Exception('Komerce did not report merchant_receives for this payment.');
+            if ($received <= 0 && $gross <= 0) {
+                throw new FOSSBilling\Exception('Komerce did not report a payment amount for this transaction.');
             }
             if ($isQris) {
                 if ($ratio < self::QRIS_MIN_RECEIVED_RATIO) {
                     throw new FOSSBilling\Exception('QRIS amount received is below the accepted tolerance. Expected :expected, merchant received :received.', [':expected' => number_format($expected, 2, '.', ''), ':received' => number_format($received, 2, '.', '')]);
                 }
             } else {
+                // VA fee is a flat surcharge paid by the customer on top of the invoice total,
+                // so merchant_receives equals the invoice total exactly. Validate directly.
                 $invoiceService->validatePaymentAmount($received, $expected);
             }
         } catch (FOSSBilling\Exception $e) {

@@ -91,7 +91,9 @@ class Service
             // @core tasks
             $this->di['event_dispatcher']->dispatch(new BeforeAdminCronRunEvent());
 
-            $this->_exec($api, 'invoice_batch_pay_with_credits');
+            // Auto-pay-with-credits dinonaktifkan: pembayaran via saldo hanya boleh
+            // terjadi atas pilihan eksplisit user (gateway/client), bukan cron.
+            // $this->_exec($api, 'invoice_batch_pay_with_credits');
             $this->_exec($api, 'invoice_batch_activate_paid');
             $isolatedTasks = [
                 'invoice_batch_generate',

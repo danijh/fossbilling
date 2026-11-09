@@ -1242,9 +1242,10 @@ class Service implements InjectionAwareInterface
                     $invoiceService = $this->di['mod_service']('Invoice');
                     $invoiceModel = $invoiceService->prepareInvoice($client, ['client_id' => (int) $client->getId(), 'items' => $invoice_items, 'gateway_id' => $gateway_id]);
 
-                    $clientBalanceService = $this->di['mod_service']('Client', 'Balance');
-                    $balanceAmount = $clientBalanceService->getClientBalance($client);
-                    $useCredits = $balanceAmount >= $ca['total'];
+                    // Saldo hanya boleh dipakai lewat aksi eksplisit berekspektasi
+                    // (checkout-balance / pay-invoice-balance dengan verifikasi
+                    // password), bukan otomatis saat checkout gateway mana pun.
+                    $useCredits = false;
 
                     $invoiceService->issueInvoice($invoiceModel, ['id' => $invoiceModel->getId(), 'use_credits' => $useCredits]);
 

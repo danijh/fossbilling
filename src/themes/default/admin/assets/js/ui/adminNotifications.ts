@@ -6,7 +6,9 @@ const SEEN_KEY = 'fossbilling_admin_notifications_seen_id';
 const TOASTED_KEY = 'fossbilling_admin_notifications_toasted_id';
 const POLL_INTERVAL_MS = 20000;
 const PAGE_SIZE = 10;
-const MAX_TOASTS = 3;
+const MAX_POPUPS = 4;
+const POPUP_TTL_MS = 6000;
+const POPUP_FADE_MS = 400;
 
 function readId(key: string): number | null {
   try {
@@ -27,6 +29,37 @@ function storeId(key: string, id: number): void {
   } catch {
     // Storage may be unavailable (private mode); polling still works in-memory.
   }
+}
+
+function popupContainer(): HTMLElement {
+  let container = document.getElementById('admin-notification-popups');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'admin-notification-popups';
+    document.body.appendChild(container);
+  }
+  return container;
+}
+
+function showPopup(message: string, href: string | null): void {
+  const container = popupContainer();
+  while (container.children.length >= MAX_POPUPS) {
+    container.firstElementChild?.remove();
+  }
+
+  const popup = document.createElement(href === null ? 'div' : 'a');
+  popup.className = 'admin-notification-popup';
+  if (href !== null) {
+    popup.setAttribute('href', href);
+  }
+  const text = document.createElement('span');
+  text.className = 'admin-notification-popup-text';
+  text.textContent = message;
+  popup.appendChild(text);
+  container.appendChild(popup);
+
+  window.setTimeout(() => popup.classList.add('is-hiding'), POPUP_TTL_MS);
+  window.setTimeout(() => popup.remove(), POPUP_TTL_MS + POPUP_FADE_MS + 50);
 }
 
 export default function initAdminNotifications() {
@@ -88,11 +121,12 @@ export default function initAdminNotifications() {
         if (fresh.length > 0) {
           toastedId = newestId;
           storeId(TOASTED_KEY, toastedId);
-          fresh.slice(-MAX_TOASTS).forEach((item) => {
-            window.FOSSBilling.message?.(item.message, 'info');
+          const href = bell.getAttribute('href');
+          fresh.slice(-MAX_POPUPS).forEach((item) => {
+            showPopup(item.message, href);
           });
-          if (fresh.length > MAX_TOASTS) {
-            window.FOSSBilling.message?.(`+${fresh.length - MAX_TOASTS} more notification(s)`, 'info');
+          if (fresh.length > MAX_POPUPS) {
+            showPopup(`+${fresh.length - MAX_POPUPS} more notification(s)`, href);
           }
         }
       },

@@ -24,6 +24,7 @@ use Box\Mod\Order\Entity\Order;
 use Box\Mod\Order\Event\AfterClientOrderCreateEvent;
 use Box\Mod\Support\Entity\SupportTicket;
 use Box\Mod\Support\Event\AfterTicketOpenedEvent;
+use Box\Mod\Support\Event\AfterTicketRepliedEvent;
 use Box\Mod\Support\Event\TicketActorRole;
 use FOSSBilling\InjectionAwareInterface;
 use FOSSBilling\SortOptions;
@@ -206,6 +207,22 @@ class Service implements InjectionAwareInterface
         };
 
         $this->notifySafely('New ' . $actor . ' ticket: ' . $this->ticketLabel($event->ticketId));
+    }
+
+    #[AsEventListener]
+    public function onTicketReplied(AfterTicketRepliedEvent $event): void
+    {
+        if ($event->actor === TicketActorRole::ADMIN) {
+            return;
+        }
+
+        $actor = match ($event->actor) {
+            TicketActorRole::ADMIN => 'staff',
+            TicketActorRole::CLIENT => 'client',
+            TicketActorRole::GUEST => 'guest',
+        };
+
+        $this->notifySafely('New reply on ' . $actor . ' ticket: ' . $this->ticketLabel($event->ticketId));
     }
 
     #[AsEventListener]

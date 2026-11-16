@@ -17,6 +17,14 @@
         </div>
         <div class="navbar-footer">
             <ul class="navbar-nav">
+                {% if has_permission('notification', 'view') %}
+                <li class="nav-item">
+                    <a class="nav-link text-reset position-relative" id="admin-notification-bell" href="{{ 'notification'|url }}" aria-label="{{ 'Notifications'|trans }}">
+                        <svg class="icon" aria-hidden="true"><use href="#bell" /></svg>
+                        <span class="badge bg-danger position-absolute top-0 start-100 translate-middle d-none" id="admin-notification-badge"></span>
+                    </a>
+                </li>
+                {% endif %}
                 <li class="nav-item dropup flex-row align-items-center">
                     <a class="nav-link text-reset flex-grow-1 overflow-hidden" href="{{ 'staff/profile'|url }}" data-bs-toggle="dropdown" data-bs-auto-close="outside" aria-label="{{ 'Open user menu'|trans }}" aria-expanded="false">
                         {{ avatar(profile.email, 32, 'avatar avatar-sm') }}

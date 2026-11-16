@@ -3,11 +3,41 @@ type ApiSuccessHandler = (result: unknown) => void;
 type ApiErrorHandler = (error: { message: string; code?: string }) => void;
 
 interface FOSSBillingApiNamespace {
-  get(endpoint: string, params?: ApiParams, successHandler?: ApiSuccessHandler, errorHandler?: ApiErrorHandler): void;
-  post(endpoint: string, params?: ApiParams, successHandler?: ApiSuccessHandler, errorHandler?: ApiErrorHandler): void;
-  put(endpoint: string, params?: ApiParams, successHandler?: ApiSuccessHandler, errorHandler?: ApiErrorHandler): void;
-  patch(endpoint: string, params?: ApiParams, successHandler?: ApiSuccessHandler, errorHandler?: ApiErrorHandler): void;
-  delete(endpoint: string, params?: ApiParams, successHandler?: ApiSuccessHandler, errorHandler?: ApiErrorHandler): void;
+  get(
+    endpoint: string,
+    params?: ApiParams,
+    successHandler?: ApiSuccessHandler,
+    errorHandler?: ApiErrorHandler,
+    enableLoader?: boolean,
+  ): void;
+  post(
+    endpoint: string,
+    params?: ApiParams,
+    successHandler?: ApiSuccessHandler,
+    errorHandler?: ApiErrorHandler,
+    enableLoader?: boolean,
+  ): void;
+  put(
+    endpoint: string,
+    params?: ApiParams,
+    successHandler?: ApiSuccessHandler,
+    errorHandler?: ApiErrorHandler,
+    enableLoader?: boolean,
+  ): void;
+  patch(
+    endpoint: string,
+    params?: ApiParams,
+    successHandler?: ApiSuccessHandler,
+    errorHandler?: ApiErrorHandler,
+    enableLoader?: boolean,
+  ): void;
+  delete(
+    endpoint: string,
+    params?: ApiParams,
+    successHandler?: ApiSuccessHandler,
+    errorHandler?: ApiErrorHandler,
+    enableLoader?: boolean,
+  ): void;
 }
 
 interface FOSSBillingEditorInstance {

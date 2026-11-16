@@ -3,6 +3,7 @@ import './js/ui/modals.ts';
 import initClipboard from './js/clipboard.ts';
 import initThemePreference from './js/ui/theme.ts';
 import initDebugBarLayout from './js/ui/debugBar.ts';
+import initAdminNotifications from './js/ui/adminNotifications.ts';
 import * as tabler from '@tabler/core';
 import './js/fossbilling.ts';
 
@@ -18,6 +19,7 @@ function loadAdminFeature(loader, name) {
 
 document.addEventListener('DOMContentLoaded', () => {
   initDebugBarLayout();
+  initAdminNotifications();
   if (document.querySelector('.datepicker')) {
     loadAdminFeature(async () => {
       const { default: initDatepickers } = await import('./js/datepicker.ts');
